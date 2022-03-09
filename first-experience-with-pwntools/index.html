@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="A first look at pwntools">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hi Pwntools, Goodbye Shell Scripts">
+<meta property="og:url" content="http://atharvdamle.com/first-experience-with-pwntools/index.html">
+<meta property="og:site_name" content="Atharv&#39;s Blog">
+<meta property="og:description" content="A first look at pwntools">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2020-06-16T21:04:31.582Z">
+<meta property="article:modified_time" content="2022-03-09T15:44:12.418Z">
+<meta property="article:author" content="Atharv Damle">
+<meta property="article:tag" content="Code">
+<meta property="article:tag" content="Binary Exploitation">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>Hi Pwntools, Goodbye Shell Scripts</title>
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.0.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/buffer-overflows/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://atharvdamle.com/first-experience-with-pwntools/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://atharvdamle.com/first-experience-with-pwntools/&text=Hi Pwntools, Goodbye Shell Scripts"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://atharvdamle.com/first-experience-with-pwntools/&title=Hi Pwntools, Goodbye Shell Scripts"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://atharvdamle.com/first-experience-with-pwntools/&is_video=false&description=Hi Pwntools, Goodbye Shell Scripts"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Hi Pwntools, Goodbye Shell Scripts&body=Check out this article: http://atharvdamle.com/first-experience-with-pwntools/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://atharvdamle.com/first-experience-with-pwntools/&title=Hi Pwntools, Goodbye Shell Scripts"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://atharvdamle.com/first-experience-with-pwntools/&title=Hi Pwntools, Goodbye Shell Scripts"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://atharvdamle.com/first-experience-with-pwntools/&title=Hi Pwntools, Goodbye Shell Scripts"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://atharvdamle.com/first-experience-with-pwntools/&title=Hi Pwntools, Goodbye Shell Scripts"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://atharvdamle.com/first-experience-with-pwntools/&name=Hi Pwntools, Goodbye Shell Scripts&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://atharvdamle.com/first-experience-with-pwntools/&t=Hi Pwntools, Goodbye Shell Scripts"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Intro"><span class="toc-number">1.</span> <span class="toc-text">Intro</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Tip"><span class="toc-number">1.1.</span> <span class="toc-text">Tip</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Too-Slow"><span class="toc-number">2.</span> <span class="toc-text">Too-Slow</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Conclusion"><span class="toc-number">3.</span> <span class="toc-text">Conclusion</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        Hi Pwntools, Goodbye Shell Scripts
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">Atharv Damle</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2020-06-16T21:04:31.582Z" itemprop="datePublished">2020-06-16</time>
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fas fa-tag"></i>
+        <a class="tag-link-link" href="/tags/Binary-Exploitation/" rel="tag">Binary Exploitation</a>, <a class="tag-link-link" href="/tags/Code/" rel="tag">Code</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <h2 id="Intro"><a href="#Intro" class="headerlink" title="Intro"></a>Intro</h2><hr>
+<p><strong>Tl;dr: use pwntools. Interact with the process using pwntools and use rabin2 -z to get the strings from the file. Profit.</strong></p>
+<p>In this challenge we have an unknown file ‘intro’ which would give us a hint to the flag. Time to get into it.</p>
+<ol>
+<li><p>Run the file command to find out what files I’m dealing with (prettified)</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">intro: ELF 32-bit LSB shared object, Intel 80386, version 1 (SYSV),</span><br><span class="line">dynamically linked,</span><br><span class="line">interpreter /lib/ld-linux.so.2,</span><br><span class="line">for GNU/Linux 3.2.0, BuildID[sha1]=177bf7376a9ca94f15c6557a9301244afc7c00f4,</span><br><span class="line">with debug_info, not stripped</span><br></pre></td></tr></table></figure>
+<p>So its an Elf binary &#x3D;&gt; An executable program (assuming C)</p>
+</li>
+<li><p>Since it is executable, and because I expect it to be safe enough, I run it.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Yay you connected!</span><br><span class="line">If you connected WITHOUT using pwntools, please exit and do that first!</span><br><span class="line">Lets see if you can strip out this address: &#123;0x1337&#125;</span><br><span class="line">Now send it back to me in decimal form!</span><br></pre></td></tr></table></figure>
+
+<p>Ah, interacting with another process.<br>I remember when I would write programs for the same and it would never work, resorting to shell loops was also hopeless.<br>Well pwntools is here to solve all problems.</p>
+</li>
+<li><p>I used (pwnlib.tubes.process)[<a target="_blank" rel="noopener" href="https://docs.pwntools.com/en/stable/tubes/processes.html]">https://docs.pwntools.com/en/stable/tubes/processes.html]</a> to run and interact with the process. Spawn a new process using the <code>process</code> function, then using the <code>readuntil(&lt;str&gt;)</code> function you can very literally read until the passed string is found in the input. Then use <code>sendline(&lt;str&gt;)</code> to write data back to the process.</p>
+<ol>
+<li><code>process()</code> has a flag: <code>shell</code> which would interpret the argument as a shell command instead of a file to run</li>
+<li><code>readuntil()</code> has a flag: <code>drop</code> which would drop the delimiter you passed in</li>
+<li><code>sendline(&lt;str&gt;)</code> function will write a newline after the string is printed</li>
+</ol>
+</li>
+<li><p>The binary throws a couple of challenges my way: converting hex to decimal, basic maath operations, reading and writing bytes etc. Here are the list of functions (from pwntools) I used to solve them:</p>
+<ol>
+<li>(p32)[<a target="_blank" rel="noopener" href="https://docs.pwntools.com/en/stable/util/packing.html#pwnlib.util.packing.p32]">https://docs.pwntools.com/en/stable/util/packing.html#pwnlib.util.packing.p32]</a>: convert (pack) integer into raw byte form</li>
+<li>(u32)[<a target="_blank" rel="noopener" href="https://docs.pwntools.com/en/stable/util/packing.html#pwnlib.util.packing.u32]">https://docs.pwntools.com/en/stable/util/packing.html#pwnlib.util.packing.u32]</a>: Unpack raw bytes into integer form</li>
+</ol>
+</li>
+<li><p>Finally, the binary asks for a secret hidden in the file. Easily found by running <code>strings</code> on the file. But if you ever downloaded radare2, I recommend using</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rabin2 -z intro</span><br></pre></td></tr></table></figure>
+
+<p>to get the strings. The command gets only the strings in the data section of memory so you don’t have to peer through the long list.</p>
+<p>The string <strong>password</strong> which was not seen used before, so assuming that that was the one, you test it, and it works.</p>
+</li>
+<li><p>The final step is to use the <code>interactive()</code> function from <code>pwnlib.tubes</code> to interact with the shell that the process spawns on finishing all the challenges. Run <code>cat flag</code> to get the flag in the directory.</p>
+</li>
+</ol>
+<p>This makes the final script to run the following.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">from pwn import *</span><br><span class="line"></span><br><span class="line">p = process(&#x27;nc plsdonthaq.me 1025&#x27;, shell=True)    # remote</span><br><span class="line">#p = process(&#x27;./intro&#x27;)                             # local usage</span><br><span class="line"></span><br><span class="line">p.readuntil(&#x27;&#123;&#x27;)                                    # read until the first &#x27;&#123;&#x27;</span><br><span class="line">raw_n = p.readuntil(&#x27;&#125;&#x27;, drop=True).decode()        # --&gt; Expected: &#123;0x1337&#125; =&gt; 0x1337</span><br><span class="line">n1 = int(raw_n, 16)                                 # convert to decimal</span><br><span class="line">p.sendline(str(n1))                                 # send data</span><br><span class="line"></span><br><span class="line">p.readuntil(&#x27;MINUS &#x27;)                               # Read until &#x27;MINUS &#x27;</span><br><span class="line">n2 = p.readuntil(&#x27;!&#x27;, drop=True)                    # ---&gt; Expected: 0x103! =&gt; 0x103</span><br><span class="line">p.sendline(str(hex(int(n1)-int(n2, 16))))           # subtract and send</span><br><span class="line"></span><br><span class="line">p.sendline(p32(n1))                                 # convert to bytes, little endian by default</span><br><span class="line"></span><br><span class="line">p.readuntil(&#x27;next line)\n&#x27;)                         # Read</span><br><span class="line">addr = p.readuntil(&#x27;\n&#x27;, drop=True)                 # Expected: xV4\x12</span><br><span class="line">parsed = u32(addr)                                  # Expected: 305419896</span><br><span class="line">p.sendline(str(parsed))</span><br><span class="line"></span><br><span class="line">p.sendline(str(hex(parsed)))                        # Expected: 0x12345678</span><br><span class="line"></span><br><span class="line">p.readuntil(&#x27;What is &#x27;)                             # Read</span><br><span class="line">a = int(p.readuntil(&#x27; + &#x27;, drop=True).decode())     # read first number, Expected: 12345</span><br><span class="line">b = int(p.readuntil(&#x27;?&#x27;, drop=True).decode())       # read second number, Expected: 12345</span><br><span class="line">p.sendline(str(a + b))                              # send sum</span><br><span class="line"></span><br><span class="line">p.sendline(&#x27;password&#x27;)                              # password that we got earlier</span><br><span class="line"></span><br><span class="line">p.interactive()                                     # Interactivity!</span><br></pre></td></tr></table></figure>
+
+<h3 id="Tip"><a href="#Tip" class="headerlink" title="Tip"></a>Tip</h3><ol>
+<li>One thing that helped me in my endeavors is the <code>DEBUG</code> flag. On running the script with the flag, it prints all debug output like what data was received from the spawned process, which is amazing for debugging.</li>
+</ol>
+<h2 id="Too-Slow"><a href="#Too-Slow" class="headerlink" title="Too-Slow"></a>Too-Slow</h2><hr>
+<p><strong>Tl;dr: Pwntools is pretty cool. You can pass multiple delimiters to <code>readuntil()</code>!</strong></p>
+<p>We come across a strange file named ‘too-slow’. Time to analyze it.</p>
+<ol>
+<li><p>Similar to the previous one, start by running the file command.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">too-slow: ELF 32-bit LSB shared object,</span><br><span class="line">Intel 80386,</span><br><span class="line">version 1 (SYSV),</span><br><span class="line">dynamically linked,</span><br><span class="line">interpreter /lib/ld-linux.so.2,</span><br><span class="line">for GNU/Linux 3.2.0,</span><br><span class="line">BuildID[sha1]=fc21f7e613d118404b5c0e038868a6e938b8766e,</span><br><span class="line">with debug_info, not stripped</span><br></pre></td></tr></table></figure>
+
+<p>ELF-binary. Yay</p>
+</li>
+<li><p>Running it, we see it wants you to solve math problems. Fast. Now, unless you’re a human calculator with godlike typing speeds, it’s best to leave this one to pwntools. Same as the last one, use pwntools to read and write to the process. Now, you would realize that you have to do this in a loop to solve all the problems.</p>
+</li>
+<li><p>When you do that however, the program gets stuck after a while. Using the DEBUG flag, we see that we have solved all the math problems and the program has opened up a shell. Pwntools is trying to read from the process, but no data is sent across. So it’s not interactive, and you cannot talk to the shell it just spawned.</p>
+</li>
+<li><p>Now, you have two ways to fix this. Either brute force it, finding the number of problems the program asks you to solve or use the <code>readuntil()</code> function better. Using the DEBUG flag to understand the format of the inut, you see that there are essentially 3 types of lines. <em>Correct Answer\n</em>, <em>number + number &#x3D;</em>, <em>Well done\n</em>. On looking at the pwntools documentation, you see that <code>readuntil()</code> accepts a list of delimiters. Using this information you can parse the input better to solve the problem.</p>
+</li>
+<li><p>Lastly, you need the <code>interactive</code> method again to talk to the shell that was spawned.</p>
+</li>
+</ol>
+<p>So the final script was</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">from pwn import *</span><br><span class="line"></span><br><span class="line"># p = process(&#x27;./too-slow&#x27;)                                    # Local</span><br><span class="line">p = process(&#x27;nc plsdonthaq.me 1026&#x27;, shell=True)               # Remote</span><br><span class="line"></span><br><span class="line">def run(done):</span><br><span class="line">	op = p.readline()                                           # read until newline</span><br><span class="line">	numline = p.readuntil((&#x27; =&#x27;, &#x27;\n&#x27;), drop=True).decode()     # read until newline or &#x27; =&#x27;</span><br><span class="line">	if (done in numline):                                       # check if we&#x27;re done</span><br><span class="line">		return False</span><br><span class="line">	a, b = numline.split(&#x27; + &#x27;)                                 # Grab the two numbers</span><br><span class="line">	p.sendline(str(int(a) + int(b)))                            # Return the sum</span><br><span class="line">	return True                                                 # Not done yet</span><br><span class="line"></span><br><span class="line">while (run(&#x27;Well done!&#x27;)):                                     # While there is work to do... do work</span><br><span class="line">	pass</span><br><span class="line"></span><br><span class="line">p.interactive()                                                # Talking to the shell</span><br></pre></td></tr></table></figure>
+
+<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><hr>
+<p>Pwntools truly is amazing. I look forward to using the other features too.</p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Writing</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Intro"><span class="toc-number">1.</span> <span class="toc-text">Intro</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Tip"><span class="toc-number">1.1.</span> <span class="toc-text">Tip</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Too-Slow"><span class="toc-number">2.</span> <span class="toc-text">Too-Slow</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Conclusion"><span class="toc-number">3.</span> <span class="toc-text">Conclusion</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://atharvdamle.com/first-experience-with-pwntools/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://atharvdamle.com/first-experience-with-pwntools/&text=Hi Pwntools, Goodbye Shell Scripts"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://atharvdamle.com/first-experience-with-pwntools/&title=Hi Pwntools, Goodbye Shell Scripts"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://atharvdamle.com/first-experience-with-pwntools/&is_video=false&description=Hi Pwntools, Goodbye Shell Scripts"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Hi Pwntools, Goodbye Shell Scripts&body=Check out this article: http://atharvdamle.com/first-experience-with-pwntools/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://atharvdamle.com/first-experience-with-pwntools/&title=Hi Pwntools, Goodbye Shell Scripts"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://atharvdamle.com/first-experience-with-pwntools/&title=Hi Pwntools, Goodbye Shell Scripts"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://atharvdamle.com/first-experience-with-pwntools/&title=Hi Pwntools, Goodbye Shell Scripts"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://atharvdamle.com/first-experience-with-pwntools/&title=Hi Pwntools, Goodbye Shell Scripts"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://atharvdamle.com/first-experience-with-pwntools/&name=Hi Pwntools, Goodbye Shell Scripts&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://atharvdamle.com/first-experience-with-pwntools/&t=Hi Pwntools, Goodbye Shell Scripts"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2019-2022
+    Atharv Damle
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+ 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script> 
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script> 
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Umami Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>

