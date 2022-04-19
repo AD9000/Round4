@@ -3,7 +3,11 @@ Thumbs.db
 db.json
 *.log
 node_modules/
-public/
+
+public/*
+# keeping the CNAME file
+!public/CNAME
+
 .deploy*/
 _multiconfig.yml
 
