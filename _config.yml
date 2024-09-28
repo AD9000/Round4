@@ -3,17 +3,17 @@
 ## Source: https://github.com/hexojs/hexo/
 
 # Site
-title: Atharv's Blog
+title: Mordy's Blog
 subtitle: ""
 description: "A peek into interesting stuff I have been doing"
 keywords:
-author: Atharv Damle
+author: Mordy
 language: en
 timezone: ""
 
 # URL
 ## Set your site url here. For example, if you use GitHub Page, set url as 'https://username.github.io/project'
-url: http://atharvdamle.com
+url: http://mordy.quest
 permalink: :title/
 permalink_defaults:
 pretty_urls:
